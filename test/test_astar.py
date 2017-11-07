@@ -2,7 +2,7 @@ import unittest
 import subprocess
 import yaml
 
-class TestStringMethods(unittest.TestCase):
+class TestAstar(unittest.TestCase):
 
   def runAstar(self, start, goal, mapFile):
     subprocess.run(

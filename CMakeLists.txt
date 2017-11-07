@@ -35,9 +35,12 @@ add_custom_target(clang-tidy
 # clang-format
 set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/planresult.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/astar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
 )
 
 add_custom_target(clang-format
@@ -71,4 +74,13 @@ add_executable(astar
 )
 target_link_libraries(astar
   ${Boost_LIBRARIES}
+)
+
+## cbs
+add_executable(cbs
+  example/cbs.cpp
+)
+target_link_libraries(cbs
+  ${Boost_LIBRARIES}
+  yaml-cpp
 )

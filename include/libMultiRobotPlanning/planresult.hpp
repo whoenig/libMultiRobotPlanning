@@ -7,7 +7,8 @@ namespace libMultiRobotPlanning {
 /*! \brief Represents the path for an agent
 
     This class is used to store the result of a planner for a single agent.
-    It has both the ordered list of states that need to be traversed as well as the ordered
+    It has both the ordered list of states that need to be traversed as well as
+   the ordered
     list of actions together with their respective costs
 
     \tparam State Custom state for the search. Needs to be copy'able

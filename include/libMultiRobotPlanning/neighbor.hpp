@@ -4,7 +4,8 @@ namespace libMultiRobotPlanning {
 
 /*! \brief Represents state transations
 
-    This class represents a transition from a start state applying an action with the given cost.
+    This class represents a transition from a start state applying an action
+   with the given cost.
 
     \tparam State Custom state for the search. Needs to be copy'able
     \tparam Action Custom action for the search. Needs to be copy'able

@@ -1,6 +1,6 @@
 # see http://clang.llvm.org/extra/clang-tidy/
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,boost-*,cppcoreguidelines-*,modernize-*,performance-*,readability-*,misc-*,google-*,bugprone-*,cert-*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,boost-*,cppcoreguidelines-*,modernize-*,performance-*,readability-*,misc-*,google-*,bugprone-*,cert-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 User:            whoenig

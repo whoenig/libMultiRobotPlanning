@@ -1,11 +1,22 @@
 # libMultiRobotPlanning
-Library with search algorithms for task and path planning for multi robot/agent systems
 
+libMultiRobotPlanning is a library with search algorithms primarily for task and path planning for multi robot/agent systems.
+It is written in C++(14), highly templated for good performance, and comes with useful examples.
 
-## Targets
+The following algorithms are currently supported:
+
+* Single-Robot Algorithms
+  * A*
+
+* Multi-Robot Algorithms
+  * Conflict-Based-Search (CBS)
+
+## Building
+
+### Targets
 
 * `make`: Build examples, only
-* `make doc`: build doxygen documentation
+* `make docs`: build doxygen documentation
 * `make clang-format`: Re-format all source files
 * `make clang-tidy`: Run linter & static code analyzer
 * `make run-test`: Run unit-tests

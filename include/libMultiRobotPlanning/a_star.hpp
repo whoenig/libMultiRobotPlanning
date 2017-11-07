@@ -20,33 +20,36 @@ namespace libMultiRobotPlanning {
 
 /*! \brief A* Algorithm to find the shortest path
 
-    This class implements the A* algorithm. A* is an informed search algorithm
-    that finds the shortest path for a given map. It can use a heuristic that
-   needs
-    to be admissible.
+This class implements the A* algorithm. A* is an informed search algorithm
+that finds the shortest path for a given map. It can use a heuristic that
+needsto be admissible.
 
-    This class can either use a fibonacci heap, or a d-ary heap. The latter is
-   the
-    default. Define "USE_FIBONACCI_HEAP" to use the fibonacci heap instead.
+This class can either use a fibonacci heap, or a d-ary heap. The latter is the
+default. Define "USE_FIBONACCI_HEAP" to use the fibonacci heap instead.
 
-    \tparam State Custom state for the search. Needs to be copy'able
-    \tparam Action Custom action for the search. Needs to be copy'able
-    \tparam Cost Custom Cost type (integer or floating point types)
-    \tparam Environment This class needs to provide the custom A* logic. In
+\tparam State Custom state for the search. Needs to be copy'able
+\tparam Action Custom action for the search. Needs to be copy'able
+\tparam Cost Custom Cost type (integer or floating point types)
+\tparam Environment This class needs to provide the custom A* logic. In
     particular, it needs to support the following functions:
-      - `Cost admissibleHeuristic(const State& s)`\n
-        This function can return 0 if no suitable heuristic is available.
-      - `bool isSolution(const State& s)`\n
-        Return true if the given state is a goal state.
-      - `void getNeighbors(const State& s, std::vector<Neighbor<State, Action,
+  - `Cost admissibleHeuristic(const State& s)`\n
+    This function can return 0 if no suitable heuristic is available.
+
+  - `bool isSolution(const State& s)`\n
+    Return true if the given state is a goal state.
+
+  - `void getNeighbors(const State& s, std::vector<Neighbor<State, Action,
    int> >& neighbors)`\n
-        Fill the list of neighboring state for the given state s.
-      - `void onExpandNode(const State& s, int fScore, int gScore)`\n
-        This function is called on every expansion and can be used for
+    Fill the list of neighboring state for the given state s.
+
+  - `void onExpandNode(const State& s, int fScore, int gScore)`\n
+    This function is called on every expansion and can be used for statistical
+purposes.
+
+  - `void onDiscover(const State& s, int fScore, int gScore)`\n
+    This function is called on every node discovery and can be used for
    statistical purposes.
-      - `void onDiscover(const State& s, int fScore, int gScore)`\n
-        This function is called on every node discovery and can be used for
-   statistical purposes.
+
     \tparam StateHasher A class to convert a state to a hash value. Default:
    std::hash<State>
 */
