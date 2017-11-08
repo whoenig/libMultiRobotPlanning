@@ -35,10 +35,12 @@ add_custom_target(clang-tidy
 # clang-format
 set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star_epsilon.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/planresult.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/astar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star_epsilon.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
 )
@@ -73,6 +75,14 @@ add_executable(a_star
   example/a_star.cpp
 )
 target_link_libraries(a_star
+  ${Boost_LIBRARIES}
+)
+
+## a_star_epsilon
+add_executable(a_star_epsilon
+  example/a_star_epsilon.cpp
+)
+target_link_libraries(a_star_epsilon
   ${Boost_LIBRARIES}
 )
 

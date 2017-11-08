@@ -10,6 +10,7 @@ The library is header only and uses templates.
 Algorithm   | Optimality         |
 ------------|--------------------|
 [A*](@ref libMultiRobotPlanning::AStar)          | optimal            |
+[A*_epsilon](@ref libMultiRobotPlanning::AStarEpsilon)          | w-bounded suboptimal            |
 
 ### Multi-Robot
 

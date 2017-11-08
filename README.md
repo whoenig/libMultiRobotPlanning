@@ -7,6 +7,7 @@ The following algorithms are currently supported:
 
 * Single-Robot Algorithms
   * A*
+  * A* epsilon (also known as focal search)
 
 * Multi-Robot Algorithms
   * Conflict-Based-Search (CBS)

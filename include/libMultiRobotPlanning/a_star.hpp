@@ -14,7 +14,8 @@
 namespace libMultiRobotPlanning {
 
 /*!
-  \example astar.cpp Simple example using a 2D grid world and up/down/left/right
+  \example a_star.cpp Simple example using a 2D grid world and
+  up/down/left/right
   actions
 */
 
