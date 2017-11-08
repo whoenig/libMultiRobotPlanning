@@ -11,8 +11,18 @@ The following algorithms are currently supported:
 
 * Multi-Robot Algorithms
   * Conflict-Based-Search (CBS)
+  * Enhanced Conflict-Based-Search (ECBS)
 
 ## Building
+
+Tested on Ubuntu 16.04.
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ### Targets
 

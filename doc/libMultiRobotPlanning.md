@@ -16,4 +16,5 @@ Algorithm   | Optimality         |
 
 Algorithm   | Optimality         |
 ------------|--------------------|
-[Conflict-Based-Search (CBS)](@ref libMultiRobotPlanning::CBS)          | optimal            |
+[Conflict-Based-Search (CBS)](@ref libMultiRobotPlanning::CBS)          | optimal (sum-of-cost)           |
+[Enhanced Conflict-Based-Search (ECBS)](@ref libMultiRobotPlanning::ECBS)          | w-bounded suboptimal (sum-of-cost)           |

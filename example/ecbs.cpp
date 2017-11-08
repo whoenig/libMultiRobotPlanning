@@ -6,10 +6,10 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <libMultiRobotPlanning/cbs.hpp>
+#include <libMultiRobotPlanning/ecbs.hpp>
 #include "timer.hpp"
 
-using libMultiRobotPlanning::CBS;
+using libMultiRobotPlanning::ECBS;
 using libMultiRobotPlanning::Neighbor;
 using libMultiRobotPlanning::PlanResult;
 
@@ -256,15 +256,13 @@ class Environment {
         m_constraints(nullptr),
         m_lastGoalConstraint(-1),
         m_highLevelExpanded(0),
-        m_lowLevelExpanded(0) {
-    // computeHeuristic();
-  }
+        m_lowLevelExpanded(0) {}
 
   Environment(const Environment&) = delete;
   Environment& operator=(const Environment&) = delete;
 
   void setLowLevelContext(size_t agentIdx, const Constraints* constraints) {
-    assert(constraints);  // NOLINT
+    assert(constraints);
     m_agentIdx = agentIdx;
     m_constraints = constraints;
     m_lastGoalConstraint = -1;
@@ -276,11 +274,79 @@ class Environment {
   }
 
   int admissibleHeuristic(const State& s) {
-    // std::cout << "H: " <<  s << " " << m_heuristic[m_agentIdx][s.x + m_dimx *
-    // s.y] << std::endl;
-    // return m_heuristic[m_agentIdx][s.x + m_dimx * s.y];
     return std::abs(s.x - m_goals[m_agentIdx].x) +
            std::abs(s.y - m_goals[m_agentIdx].y);
+  }
+
+  // low-level
+  int focalStateHeuristic(
+      const State& s, int /*gScore*/,
+      const std::vector<PlanResult<State, Action, int> >& solution) {
+    int numConflicts = 0;
+    for (size_t i = 0; i < solution.size(); ++i) {
+      if (i != m_agentIdx && !solution[i].states.empty()) {
+        State state2 = getState(i, solution, s.time);
+        if (s.equalExceptTime(state2)) {
+          ++numConflicts;
+        }
+      }
+    }
+    return numConflicts;
+  }
+
+  // low-level
+  int focalTransitionHeuristic(
+      const State& s1a, const State& s1b, int /*gScoreS1a*/, int /*gScoreS1b*/,
+      const std::vector<PlanResult<State, Action, int> >& solution) {
+    int numConflicts = 0;
+    for (size_t i = 0; i < solution.size(); ++i) {
+      if (i != m_agentIdx && !solution[i].states.empty()) {
+        State s2a = getState(i, solution, s1a.time);
+        State s2b = getState(i, solution, s1b.time);
+        if (s1a.equalExceptTime(s2b) && s1b.equalExceptTime(s2a)) {
+          ++numConflicts;
+        }
+      }
+    }
+    return numConflicts;
+  }
+
+  // Count all conflicts
+  int focalHeuristic(
+      const std::vector<PlanResult<State, Action, int> >& solution) {
+    int numConflicts = 0;
+
+    int max_t = 0;
+    for (const auto& sol : solution) {
+      max_t = std::max<int>(max_t, sol.states.size() - 1);
+    }
+
+    for (int t = 0; t < max_t; ++t) {
+      // check drive-drive vertex collisions
+      for (size_t i = 0; i < solution.size(); ++i) {
+        State state1 = getState(i, solution, t);
+        for (size_t j = i + 1; j < solution.size(); ++j) {
+          State state2 = getState(j, solution, t);
+          if (state1.equalExceptTime(state2)) {
+            ++numConflicts;
+          }
+        }
+      }
+      // drive-drive edge (swap)
+      for (size_t i = 0; i < solution.size(); ++i) {
+        State state1a = getState(i, solution, t);
+        State state1b = getState(i, solution, t + 1);
+        for (size_t j = i + 1; j < solution.size(); ++j) {
+          State state2a = getState(j, solution, t);
+          State state2b = getState(j, solution, t + 1);
+          if (state1a.equalExceptTime(state2b) &&
+              state1b.equalExceptTime(state2a)) {
+            ++numConflicts;
+          }
+        }
+      }
+    }
+    return numConflicts;
   }
 
   bool isSolution(const State& s) {
@@ -442,125 +508,12 @@ class Environment {
     return con.find(EdgeConstraint(s1.time, s1.x, s1.y, s2.x, s2.y)) ==
            con.end();
   }
-#if 0
-  // We use another A* search for simplicity
-  // we compute the shortest path to each goal by using the fact that our getNeighbor function is
-  // symmetric and by not terminating the AStar search until the queue is empty
-  void computeHeuristic()
-  {
-    class HeuristicEnvironment
-    {
-    public:
-      HeuristicEnvironment(
-        size_t dimx,
-        size_t dimy,
-        const std::unordered_set<Location>& obstacles,
-        std::vector<int>* heuristic)
-        : m_dimx(dimx)
-        , m_dimy(dimy)
-        , m_obstacles(obstacles)
-        , m_heuristic(heuristic)
-      {
-      }
 
-      int admissibleHeuristic(
-        const Location& s)
-      {
-        return 0;
-      }
-
-      bool isSolution(
-        const Location& s)
-      {
-        return false;
-      }
-
-      void getNeighbors(
-        const Location& s,
-        std::vector<Neighbor<Location, Action, int> >& neighbors)
-      {
-        neighbors.clear();
-
-        {
-          Location n(s.x-1, s.y);
-          if (stateValid(n)) {
-            neighbors.emplace_back(Neighbor<Location, Action, int>(n, Action::Left, 1));
-          }
-        }
-        {
-          Location n(s.x+1, s.y);
-          if (stateValid(n)) {
-            neighbors.emplace_back(Neighbor<Location, Action, int>(n, Action::Right, 1));
-          }
-        }
-        {
-          Location n(s.x, s.y+1);
-          if (stateValid(n)) {
-            neighbors.emplace_back(Neighbor<Location, Action, int>(n, Action::Up, 1));
-          }
-        }
-        {
-          Location n(s.x, s.y-1);
-          if (stateValid(n)) {
-            neighbors.emplace_back(Neighbor<Location, Action, int>(n, Action::Down, 1));
-          }
-        }
-      }
-
-      void onExpandNode(
-        const Location& s,
-        int fScore,
-        int gScore)
-      {
-      }
-
-      void onDiscover(
-        const Location& s,
-        int fScore,
-        int gScore)
-      {
-        (*m_heuristic)[s.x + m_dimx * s.y] = gScore;
-      }
-
-    private:
-      bool stateValid(
-        const Location& s)
-      {
-        return    s.x >= 0
-               && s.x < m_dimx
-               && s.y >= 0
-               && s.y < m_dimy
-               && m_obstacles.find(Location(s.x, s.y)) == m_obstacles.end();
-      }
-
-    private:
-      int m_dimx;
-      int m_dimy;
-      const std::unordered_set<Location>& m_obstacles;
-      std::vector<int>* m_heuristic;
-
-    };
-
-    m_heuristic.resize(m_goals.size());
-
-    std::vector< Neighbor<State, Action, int> > neighbors;
-
-    for (size_t i = 0; i < m_goals.size(); ++i) {
-      m_heuristic[i].assign(m_dimx * m_dimy, std::numeric_limits<int>::max());
-      HeuristicEnvironment henv(m_dimx, m_dimy, m_obstacles, &m_heuristic[i]);
-      AStar<Location, Action, int, HeuristicEnvironment> astar(henv);
-      PlanResult<Location, Action, int> dummy;
-      astar.search(m_goals[i], dummy);
-      m_heuristic[i][m_goals[i].x + m_dimx * m_goals[i].y] = 0;
-    }
-  }
-#endif
  private:
   int m_dimx;
   int m_dimy;
   std::unordered_set<Location> m_obstacles;
   std::vector<Location> m_goals;
-  // std::vector< std::vector<int> > m_heuristic;
   size_t m_agentIdx;
   const Constraints* m_constraints;
   int m_lastGoalConstraint;
@@ -574,11 +527,14 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Allowed options");
   std::string inputFile;
   std::string outputFile;
+  float w;
   desc.add_options()("help", "produce help message")(
       "input,i", po::value<std::string>(&inputFile)->required(),
       "input file (YAML)")("output,o",
                            po::value<std::string>(&outputFile)->required(),
-                           "output file (YAML)");
+                           "output file (YAML)")(
+      "suboptimality,w", po::value<float>(&w)->default_value(1.0),
+      "suboptimality bound");
 
   try {
     po::variables_map vm;
@@ -618,7 +574,7 @@ int main(int argc, char* argv[]) {
   }
 
   Environment mapf(dimx, dimy, obstacles, goals);
-  CBS<State, Action, int, Conflict, Constraints, Environment> cbs(mapf);
+  ECBS<State, Action, int, Conflict, Constraints, Environment> cbs(mapf, w);
   std::vector<PlanResult<State, Action, int> > solution;
 
   Timer timer;
