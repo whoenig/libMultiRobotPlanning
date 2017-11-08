@@ -6,7 +6,7 @@ class TestAstar(unittest.TestCase):
 
   def runAstar(self, start, goal, mapFile):
     subprocess.run(
-      ["./astar",
+      ["./a_star",
        "--startX", str(start[0]),
        "--startY", str(start[1]),
        "--goalX", str(goal[0]),
