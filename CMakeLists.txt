@@ -68,11 +68,11 @@ include_directories(
 
 # Examples
 
-## astar
-add_executable(astar
-  example/astar.cpp
+## a_star
+add_executable(a_star
+  example/a_star.cpp
 )
-target_link_libraries(astar
+target_link_libraries(a_star
   ${Boost_LIBRARIES}
 )
 
