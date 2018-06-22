@@ -13,6 +13,9 @@ The following algorithms are currently supported:
   * Conflict-Based-Search (CBS)
   * Enhanced Conflict-Based-Search (ECBS)
 
+* Assignment Algorithms
+  * Minimum sum-of-cost (flow-based; integer costs; any number of agents/tasks)
+
 ## Building
 
 Tested on Ubuntu 16.04.
