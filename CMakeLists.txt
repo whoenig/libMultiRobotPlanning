@@ -40,12 +40,14 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/ecbs.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/next_best_assignment.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/planresult.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star_epsilon.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
 )
 
@@ -112,6 +114,15 @@ add_executable(ecbs
   example/ecbs.cpp
 )
 target_link_libraries(ecbs
+  ${Boost_LIBRARIES}
+  yaml-cpp
+)
+
+## next_best_assignment
+add_executable(next_best_assignment
+  example/next_best_assignment.cpp
+)
+target_link_libraries(next_best_assignment
   ${Boost_LIBRARIES}
   yaml-cpp
 )

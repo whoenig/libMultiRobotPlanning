@@ -24,3 +24,4 @@ Algorithm   | Optimality         |
 Algorithm   | Optimality         |
 ------------|--------------------|
 [Best Assignment (Network flow based)](@ref libMultiRobotPlanning::Assignment)          | optimal (sum-of-cost)           |
+[Next Best Assignment](@ref libMultiRobotPlanning::NextBestAssignment)          | series of optimal solutions (sum-of-cost)           |

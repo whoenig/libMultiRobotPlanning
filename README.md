@@ -15,6 +15,7 @@ The following algorithms are currently supported:
 
 * Assignment Algorithms
   * Minimum sum-of-cost (flow-based; integer costs; any number of agents/tasks)
+  * Best Next Assignment (series of optimal solutions)
 
 ## Building
 
@@ -34,3 +35,9 @@ make
 * `make clang-format`: Re-format all source files
 * `make clang-tidy`: Run linter & static code analyzer
 * `make run-test`: Run unit-tests
+
+## Run specific tests
+
+```
+python3 ../test/test_next_best_assignment.py TestNextBestAssignment.test_1by2
+```
