@@ -1,19 +1,18 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <unordered_set>
 
-#include <boost/program_options.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/exterior_property.hpp>
 #include <boost/graph/floyd_warshall_shortest.hpp>
+#include <boost/program_options.hpp>
 
 #include <yaml-cpp/yaml.h>
 
 #include "timer.hpp"
 
-struct Location
-{
+struct Location {
   Location(int x, int y) : x(x), y(y) {}
   int x;
   int y;
@@ -26,42 +25,38 @@ struct Location
     return std::tie(x, y) == std::tie(other.x, other.y);
   }
 
-  friend std::ostream& operator<< ( std::ostream& os, const Location& c)
-  {
+  friend std::ostream& operator<<(std::ostream& os, const Location& c) {
     return os << "(" << c.x << "," << c.y << ")";
   }
 };
 
-namespace std
-{
-template<>
+namespace std {
+template <>
 struct hash<Location> {
-    size_t operator()(const Location& s) const {
-      size_t seed = 0;
-      boost::hash_combine(seed, s.x);
-      boost::hash_combine(seed, s.y);
-      return seed;
-    }
+  size_t operator()(const Location& s) const {
+    size_t seed = 0;
+    boost::hash_combine(seed, s.x);
+    boost::hash_combine(seed, s.y);
+    return seed;
+  }
 };
 }
 
 #include "shortest_path_heuristic.hpp"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   namespace po = boost::program_options;
   // Declare the supported options.
   po::options_description desc("Allowed options");
   std::string inputFile;
   std::string outputFile;
-  desc.add_options()
-      ("help", "produce help message")
-      ("input,i", po::value<std::string>(&inputFile)->required(), "input file (YAML)")
-      ("output,o", po::value<std::string>(&outputFile)->required(), "output file (CSV)")
-  ;
+  desc.add_options()("help", "produce help message")(
+      "input,i", po::value<std::string>(&inputFile)->required(),
+      "input file (YAML)")("output,o",
+                           po::value<std::string>(&outputFile)->required(),
+                           "output file (CSV)");
 
-  try
-  {
+  try {
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -70,16 +65,13 @@ int main(int argc, char* argv[])
       std::cout << desc << "\n";
       return 0;
     }
-  }
-  catch(po::error& e)
-  {
+  } catch (po::error& e) {
     std::cerr << e.what() << std::endl << std::endl;
     std::cerr << desc << std::endl;
     return 1;
   }
 
   YAML::Node config = YAML::LoadFile(inputFile);
-
 
   std::unordered_set<Location> obstacles;
 #if 0

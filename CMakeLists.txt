@@ -50,6 +50,8 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs_ta.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
 )
 

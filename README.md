@@ -10,8 +10,9 @@ The following algorithms are currently supported:
   * A* epsilon (also known as focal search)
 
 * Multi-Robot Algorithms
-  * Conflict-Based-Search (CBS)
-  * Enhanced Conflict-Based-Search (ECBS)
+  * Conflict-Based Search (CBS)
+  * Enhanced Conflict-Based Search (ECBS)
+  * Conflict-Based Search with Optimal Task Assignment (CBS-TA)
 
 * Assignment Algorithms
   * Minimum sum-of-cost (flow-based; integer costs; any number of agents/tasks)

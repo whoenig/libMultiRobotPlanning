@@ -15,17 +15,21 @@ namespace libMultiRobotPlanning {
 /*! \brief Conflict-Based-Search with Optimal Task Assignment (CBS-TA) algorithm
 to find tasks and collision-free paths jointly, minimizing sum-of-cost.
 
-This class implements the Conflict-Based-Search with Optimal Task Assignment (CBS-TA) algorithm.
-This algorithm assigns tasks and finds collision-free path for multiple agents with start and
+This class implements the Conflict-Based-Search with Optimal Task Assignment
+(CBS-TA) algorithm.
+This algorithm assigns tasks and finds collision-free path for multiple agents
+with start and
 goal locations given for each agent.
-CBS-TA is an extension of the CBS algorithms, operating in a search forest rather
+CBS-TA is an extension of the CBS algorithms, operating in a search forest
+rather
 than a search tree (where each root node refers to a possible assignment).
 CBS-TA is optimal with respect to the sum-of-individual costs.
 
 Details of the algorithm can be found in the following paper:\n
 W. Hönig, S. Kiesel, A. Tinka, J. W. Durham, and N. Ayanian.\n
 "Conflict-Based Search with Optimal Task Assignment",\n
-In Proc. of the 17th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)\n
+In Proc. of the 17th International Conference on Autonomous Agents and
+Multiagent Systems (AAMAS)\n
 Stockholm, Sweden, July 2018.
 
 The underlying A* can either use a fibonacci heap, or a d-ary heap.
@@ -74,28 +78,14 @@ statistical purposes.
     This function is called on every low-level expansion and can be used for
 statistical purposes.
 */
-template <
-  typename State,
-  typename Action,
-  typename Cost,
-  typename Conflict,
-  typename Constraints,
-  typename Task,
-  typename Environment
-  >
-class CBSTA
-{
-public:
-  CBSTA(
-    Environment& environment)
-    : m_env(environment)
-  {
-  }
+template <typename State, typename Action, typename Cost, typename Conflict,
+          typename Constraints, typename Task, typename Environment>
+class CBSTA {
+ public:
+  CBSTA(Environment& environment) : m_env(environment) {}
 
-  bool search(
-    const std::vector<State>& initialStates,
-    std::vector<PlanResult<State, Action, Cost> >& solution)
-  {
+  bool search(const std::vector<State>& initialStates,
+              std::vector<PlanResult<State, Action, Cost> >& solution) {
     HighLevelNode start;
     start.solution.resize(initialStates.size());
     start.constraints.resize(initialStates.size());
@@ -110,24 +100,23 @@ public:
       //   start.solution[i] = solution[i];
       //   std::cout << "use existing solution for agent: " << i << std::endl;
       // } else {
-        LowLevelEnvironment llenv(m_env, i, start.constraints[i], start.tasks[i]);
-        LowLevelSearch_t lowLevel(llenv);
-        bool success = lowLevel.search(
-          initialStates[i],
-          start.solution[i]);
-        if (!success) {
-          return false;
-        }
+      LowLevelEnvironment llenv(m_env, i, start.constraints[i], start.tasks[i]);
+      LowLevelSearch_t lowLevel(llenv);
+      bool success = lowLevel.search(initialStates[i], start.solution[i]);
+      if (!success) {
+        return false;
+      }
       // }
       start.cost += start.solution[i].cost;
     }
 
     // std::priority_queue<HighLevelNode> open;
-    typename boost::heap::d_ary_heap<HighLevelNode, boost::heap::arity<2>, boost::heap::mutable_<true> > open;
+    typename boost::heap::d_ary_heap<HighLevelNode, boost::heap::arity<2>,
+                                     boost::heap::mutable_<true> >
+        open;
 
     auto handle = open.push(start);
     (*handle).handle = handle;
-
 
     solution.clear();
     int id = 1;
@@ -161,9 +150,7 @@ public:
           for (size_t i = 0; i < n.tasks.size(); ++i) {
             LowLevelEnvironment llenv(m_env, i, n.constraints[i], n.tasks[i]);
             LowLevelSearch_t lowLevel(llenv);
-            bool success = lowLevel.search(
-              initialStates[i],
-              n.solution[i]);
+            bool success = lowLevel.search(initialStates[i], n.solution[i]);
             if (!success) {
               allSuccessful = false;
             }
@@ -180,12 +167,11 @@ public:
 
       // create additional nodes to resolve conflict
       // std::cout << "Found conflict: " << conflict << std::endl;
-      // std::cout << "Found conflict at t=" << conflict.time << " type: " << conflict.type << std::endl;
+      // std::cout << "Found conflict at t=" << conflict.time << " type: " <<
+      // conflict.type << std::endl;
 
       std::map<size_t, Constraints> constraints;
-      m_env.createConstraintsFromConflict(
-        conflict,
-        constraints);
+      m_env.createConstraintsFromConflict(conflict, constraints);
       for (const auto& c : constraints) {
         // std::cout << "Add HL node for " << c.first << std::endl;
         size_t i = c.first;
@@ -201,11 +187,10 @@ public:
 
         newNode.cost -= newNode.solution[i].cost;
 
-        LowLevelEnvironment llenv(m_env, i, newNode.constraints[i], newNode.tasks[i]);
+        LowLevelEnvironment llenv(m_env, i, newNode.constraints[i],
+                                  newNode.tasks[i]);
         LowLevelSearch_t lowLevel(llenv);
-        bool success = lowLevel.search(
-          initialStates[i],
-          newNode.solution[i]);
+        bool success = lowLevel.search(initialStates[i], newNode.solution[i]);
 
         newNode.cost += newNode.solution[i].cost;
 
@@ -222,10 +207,8 @@ public:
     return false;
   }
 
-
-private:
-  struct HighLevelNode
-  {
+ private:
+  struct HighLevelNode {
     std::vector<PlanResult<State, Action, Cost> > solution;
     std::vector<Constraints> constraints;
     std::vector<Task> tasks;
@@ -235,16 +218,17 @@ private:
     int id;
     bool isRoot;
 
-    typename boost::heap::d_ary_heap<HighLevelNode, boost::heap::arity<2>, boost::heap::mutable_<true> >::handle_type handle;
+    typename boost::heap::d_ary_heap<HighLevelNode, boost::heap::arity<2>,
+                                     boost::heap::mutable_<true> >::handle_type
+        handle;
 
     bool operator<(const HighLevelNode& n) const {
       // if (cost != n.cost)
-        return cost > n.cost;
+      return cost > n.cost;
       // return id > n.id;
     }
 
-    friend std::ostream& operator<< ( std::ostream& os, const HighLevelNode& c)
-    {
+    friend std::ostream& operator<<(std::ostream& os, const HighLevelNode& c) {
       os << "id: " << c.id << " cost: " << c.cost << std::endl;
       for (size_t i = 0; i < c.solution.size(); ++i) {
         os << "Agent: " << i << std::endl;
@@ -260,70 +244,46 @@ private:
     }
   };
 
-  struct LowLevelEnvironment
-  {
-    LowLevelEnvironment(
-      Environment& env,
-      size_t agentIdx,
-      const Constraints& constraints,
-      Task task)
-      : m_env(env)
-      // , m_agentIdx(agentIdx)
-      // , m_constraints(constraints)
+  struct LowLevelEnvironment {
+    LowLevelEnvironment(Environment& env, size_t agentIdx,
+                        const Constraints& constraints, Task task)
+        : m_env(env)
+    // , m_agentIdx(agentIdx)
+    // , m_constraints(constraints)
     {
       m_env.setLowLevelContext(agentIdx, &constraints, task);
     }
 
-    Cost admissibleHeuristic(
-      const State& s)
-    {
+    Cost admissibleHeuristic(const State& s) {
       return m_env.admissibleHeuristic(s);
     }
 
-    bool isSolution(
-      const State& s)
-    {
-      return m_env.isSolution(s);
+    bool isSolution(const State& s) { return m_env.isSolution(s); }
+
+    void getNeighbors(const State& s,
+                      std::vector<Neighbor<State, Action, Cost> >& neighbors) {
+      m_env.getNeighbors(s, neighbors);
     }
 
-    void getNeighbors(
-      const State& s,
-      std::vector<Neighbor<State, Action, Cost> >& neighbors)
-    {
-      m_env.getNeighbors(
-        s,
-        neighbors);
-    }
-
-    void onExpandNode(
-      const State& s,
-      Cost fScore,
-      Cost gScore)
-    {
+    void onExpandNode(const State& s, Cost fScore, Cost gScore) {
       // std::cout << "LL expand: " << s << std::endl;
       m_env.onExpandLowLevelNode(s, fScore, gScore);
     }
 
-    void onDiscover(
-      const State& /*s*/,
-      Cost /*fScore*/,
-      Cost /*gScore*/)
-    {
+    void onDiscover(const State& /*s*/, Cost /*fScore*/, Cost /*gScore*/) {
       // std::cout << "LL discover: " << s << std::endl;
       // m_env.onDiscoverLowLevel(s, m_agentIdx, m_constraints);
     }
 
-  private:
+   private:
     Environment& m_env;
     // size_t m_agentIdx;
     // const Constraints& m_constraints;
   };
 
-private:
+ private:
   Environment& m_env;
   typedef AStar<State, Action, Cost, LowLevelEnvironment> LowLevelSearch_t;
 };
 
-
 }  // namespace libMultiRobotPlanning
-

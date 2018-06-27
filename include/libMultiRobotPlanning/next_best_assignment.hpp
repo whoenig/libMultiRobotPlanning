@@ -13,7 +13,8 @@ namespace libMultiRobotPlanning {
 
 /*! \brief Find series of assignment, ordered by sum-of-cost
 
-This class can find a series of assignment, ordered by sum-of-cost (lowest first)
+This class can find a series of assignment, ordered by sum-of-cost (lowest
+first)
 for given agents and tasks. The costs must be integers, the agents and
 tasks can be of any user-specified type.
 
@@ -21,7 +22,8 @@ This method is a an iterative variant of k-best-assignment.
 Details of the algorithm can be found in the following paper:\n
 W. Hönig, S. Kiesel, A. Tinka, J. W. Durham, and N. Ayanian.\n
 "Conflict-Based Search with Optimal Task Assignment",\n
-In Proc. of the 17th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)\n
+In Proc. of the 17th International Conference on Autonomous Agents and
+Multiagent Systems (AAMAS)\n
 Stockholm, Sweden, July 2018.
 
 \tparam Agent Type of the agent. Needs to be copy'able and comparable
