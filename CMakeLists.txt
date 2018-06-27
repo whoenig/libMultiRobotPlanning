@@ -38,6 +38,7 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star_epsilon.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/assignment.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs_ta.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/ecbs.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/next_best_assignment.hpp
@@ -46,6 +47,7 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star_epsilon.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs_ta.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
@@ -105,6 +107,15 @@ add_executable(cbs
   example/cbs.cpp
 )
 target_link_libraries(cbs
+  ${Boost_LIBRARIES}
+  yaml-cpp
+)
+
+## cbs_ta
+add_executable(cbs_ta
+  example/cbs_ta.cpp
+)
+target_link_libraries(cbs_ta
   ${Boost_LIBRARIES}
   yaml-cpp
 )
