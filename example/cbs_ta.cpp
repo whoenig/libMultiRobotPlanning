@@ -292,8 +292,8 @@ public:
     , m_heuristic(dimx, dimy, obstacles)
   {
     for (size_t i = 0; i < startStates.size(); ++i) {
-      int groupStart = floor(i / (float)agentsPerGroup) * agentsPerGroup;
-      int groupEnd = groupStart + agentsPerGroup;
+      size_t groupStart = floor(i / (float)agentsPerGroup) * agentsPerGroup;
+      size_t groupEnd = groupStart + agentsPerGroup;
       std::cout << "group range: " << groupStart << " - " << groupEnd << std::endl;
       for (size_t j = 0; j < goals.size(); ++j) {
         // m_assignment.setCost(i, j, std::abs(startStates[i].x - goals[j].x) + std::abs(startStates[i].y - goals[j].y));
@@ -475,15 +475,15 @@ public:
     // }
   }
 
-  void onExpandHighLevelNode(int cost)
+  void onExpandHighLevelNode(int /*cost*/)
   {
     m_highLevelExpanded++;
   }
 
   void onExpandLowLevelNode(
-    const State& s,
-    int fScore,
-    int gScore)
+    const State& /*s*/,
+    int /*fScore*/,
+    int /*gScore*/)
   {
     m_lowLevelExpanded++;
   }

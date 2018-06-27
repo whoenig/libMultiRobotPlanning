@@ -305,9 +305,9 @@ private:
     }
 
     void onDiscover(
-      const State& s,
-      Cost fScore,
-      Cost gScore)
+      const State& /*s*/,
+      Cost /*fScore*/,
+      Cost /*gScore*/)
     {
       // std::cout << "LL discover: " << s << std::endl;
       // m_env.onDiscoverLowLevel(s, m_agentIdx, m_constraints);
