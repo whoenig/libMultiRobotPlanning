@@ -100,9 +100,13 @@ class CBSTA {
       //   start.solution[i] = solution[i];
       //   std::cout << "use existing solution for agent: " << i << std::endl;
       // } else {
-      LowLevelEnvironment llenv(m_env, i, start.constraints[i], start.tasks[i]);
-      LowLevelSearch_t lowLevel(llenv);
-      bool success = lowLevel.search(initialStates[i], start.solution[i]);
+      bool success = false;
+      if (!start.tasks.empty()) {
+        LowLevelEnvironment llenv(m_env, i, start.constraints[i],
+                                  start.tasks[i]);
+        LowLevelSearch_t lowLevel(llenv);
+        success = lowLevel.search(initialStates[i], start.solution[i]);
+      }
       if (!success) {
         return false;
       }

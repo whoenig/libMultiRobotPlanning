@@ -216,6 +216,7 @@ struct Constraints {
 };
 
 struct Location {
+  Location() = default;
   Location(int x, int y) : x(x), y(y) {}
   int x;
   int y;
@@ -253,13 +254,13 @@ class Environment {
   Environment(size_t dimx, size_t dimy,
               const std::unordered_set<Location>& obstacles,
               const std::vector<State>& startStates,
-              const std::vector<Location>& goals, size_t maxTaskAssignments,
-              size_t agentsPerGroup)
+              const std::vector<std::unordered_set<Location> >& goals,
+              size_t maxTaskAssignments)
       : m_dimx(dimx),
         m_dimy(dimy),
         m_obstacles(obstacles),
-        m_goals(goals),
         m_agentIdx(0),
+        m_goal(nullptr),
         m_constraints(nullptr),
         m_lastGoalConstraint(-1),
         m_maxTaskAssignments(maxTaskAssignments),
@@ -267,49 +268,54 @@ class Environment {
         m_highLevelExpanded(0),
         m_lowLevelExpanded(0),
         m_heuristic(dimx, dimy, obstacles) {
+    m_numAgents = startStates.size();
     for (size_t i = 0; i < startStates.size(); ++i) {
-      size_t groupStart =
-          floor(i / static_cast<float>(agentsPerGroup)) * agentsPerGroup;
-      size_t groupEnd = groupStart + agentsPerGroup;
-      std::cout << "group range: " << groupStart << " - " << groupEnd
-                << std::endl;
-      for (size_t j = 0; j < goals.size(); ++j) {
-        // m_assignment.setCost(i, j, std::abs(startStates[i].x - goals[j].x) +
-        // std::abs(startStates[i].y - goals[j].y));
-        if (groupStart <= j && groupEnd > j) {
-          m_assignment.setCost(
-              i, j,
-              m_heuristic.getValue(Location(startStates[i].x, startStates[i].y),
-                                   goals[j]));
-        }
+      for (const auto& goal : goals[i]) {
+        m_assignment.setCost(
+            i, goal, m_heuristic.getValue(
+                         Location(startStates[i].x, startStates[i].y), goal));
+        m_goals.insert(goal);
       }
     }
     m_assignment.solve();
   }
 
   void setLowLevelContext(size_t agentIdx, const Constraints* constraints,
-                          size_t task) {
+                          const Location* task) {
     assert(constraints);
     m_agentIdx = agentIdx;
-    m_task = task;
+    m_goal = task;
     m_constraints = constraints;
     m_lastGoalConstraint = -1;
-    for (const auto& vc : constraints->vertexConstraints) {
-      if (vc.x == m_goals[m_task].x && vc.y == m_goals[m_task].y) {
+    if (m_goal != nullptr) {
+      for (const auto& vc : constraints->vertexConstraints) {
+        if (vc.x == m_goal->x && vc.y == m_goal->y) {
+          m_lastGoalConstraint = std::max(m_lastGoalConstraint, vc.time);
+        }
+      }
+    } else {
+      for (const auto& vc : constraints->vertexConstraints) {
         m_lastGoalConstraint = std::max(m_lastGoalConstraint, vc.time);
       }
     }
+    // std::cout << "setLLCtx: " << agentIdx << " " << m_lastGoalConstraint <<
+    // std::endl;
   }
 
   int admissibleHeuristic(const State& s) {
-    return m_heuristic.getValue(Location(s.x, s.y), m_goals[m_task]);
-    // return   std::abs(s.x - m_goals[m_task].x)
-    //        + std::abs(s.y - m_goals[m_task].y);
+    if (m_goal != nullptr) {
+      return m_heuristic.getValue(Location(s.x, s.y), *m_goal);
+    } else {
+      return 0;
+    }
   }
 
   bool isSolution(const State& s) {
-    return s.x == m_goals[m_task].x && s.y == m_goals[m_task].y &&
-           s.time > m_lastGoalConstraint;
+    bool atGoal = true;
+    if (m_goal != nullptr) {
+      atGoal = s.x == m_goal->x && s.y == m_goal->y;
+    }
+    return atGoal && s.time > m_lastGoalConstraint;
   }
 
   void getNeighbors(const State& s,
@@ -361,7 +367,7 @@ class Environment {
       Conflict& result) {
     int max_t = 0;
     for (const auto& sol : solution) {
-      max_t = std::max<int>(max_t, sol.states.size() - 1);
+      max_t = std::max<int>(max_t, sol.states.size());
     }
 
     for (int t = 0; t < max_t; ++t) {
@@ -429,29 +435,23 @@ class Environment {
     }
   }
 
-  void nextTaskAssignment(std::vector<size_t>& tasks) {
+  void nextTaskAssignment(std::vector<const Location*>& tasks) {
     if (m_numTaskAssignments > m_maxTaskAssignments) {
       return;
     }
 
-    std::map<size_t, size_t> solution;
+    std::map<size_t, Location> solution;
     int64_t cost = m_assignment.nextSolution(solution);
     if (!solution.empty()) {
       std::cout << "nextTaskAssignment: cost: " << cost << std::endl;
-      tasks.resize(
-          solution.size());  // TODO(whoenig): handle cases where we have fewer
-                             // tasks than robots...
+
+      tasks.resize(m_numAgents, nullptr);
       for (const auto& s : solution) {
-        tasks[s.first] = s.second;
-        // std::cout << s.first << "->" << s.second << std::endl;
+        tasks[s.first] = &(*m_goals.find(s.second));
       }
 
       ++m_numTaskAssignments;
     }
-
-    // for (const auto& t : tasks) {
-    //   std::cout << "TA: " << t << std::endl;
-    // }
   }
 
   void onExpandHighLevelNode(int /*cost*/) { m_highLevelExpanded++; }
@@ -498,17 +498,18 @@ class Environment {
   int m_dimx;
   int m_dimy;
   std::unordered_set<Location> m_obstacles;
-  std::vector<Location> m_goals;
   size_t m_agentIdx;
-  size_t m_task;
+  const Location* m_goal;
   const Constraints* m_constraints;
   int m_lastGoalConstraint;
-  NextBestAssignment<size_t, size_t> m_assignment;
+  NextBestAssignment<size_t, Location> m_assignment;
   size_t m_maxTaskAssignments;
   size_t m_numTaskAssignments;
   int m_highLevelExpanded;
   int m_lowLevelExpanded;
   ShortestPathHeuristic m_heuristic;
+  size_t m_numAgents;
+  std::unordered_set<Location> m_goals;
 };
 
 int main(int argc, char* argv[]) {
@@ -518,7 +519,6 @@ int main(int argc, char* argv[]) {
   std::string inputFile;
   std::string outputFile;
   size_t maxTaskAssignments;
-  size_t groupSize;
   desc.add_options()("help", "produce help message")(
       "input,i", po::value<std::string>(&inputFile)->required(),
       "input file (YAML)")("output,o",
@@ -526,9 +526,7 @@ int main(int argc, char* argv[]) {
                            "output file (YAML)")(
       "maxTaskAssignments",
       po::value<size_t>(&maxTaskAssignments)->default_value(1e9),
-      "maximum number of task assignments to try")(
-      "groupSize", po::value<size_t>(&groupSize)->default_value(1e9),
-      "number of agents per group");
+      "maximum number of task assignments to try");
 
   try {
     po::variables_map vm;
@@ -548,7 +546,7 @@ int main(int argc, char* argv[]) {
   YAML::Node config = YAML::LoadFile(inputFile);
 
   std::unordered_set<Location> obstacles;
-  std::vector<Location> goals;
+  std::vector<std::unordered_set<Location> > goals;
   std::vector<State> startStates;
 
   const auto& dim = config["map"]["dimensions"];
@@ -561,16 +559,17 @@ int main(int argc, char* argv[]) {
 
   for (const auto& node : config["agents"]) {
     const auto& start = node["start"];
-    const auto& goal = node["goal"];
     startStates.emplace_back(State(0, start[0].as<int>(), start[1].as<int>()));
-    // std::cout << "s: " << startStates.back() << std::endl;
-    goals.emplace_back(Location(goal[0].as<int>(), goal[1].as<int>()));
+    goals.resize(goals.size() + 1);
+    for (const auto& goal : node["potentialGoals"]) {
+      goals.back().emplace(Location(goal[0].as<int>(), goal[1].as<int>()));
+    }
   }
 
   Environment mapf(dimx, dimy, obstacles, startStates, goals,
-                   maxTaskAssignments, groupSize);
-  CBSTA<State, Action, int, Conflict, Constraints, size_t, Environment> cbs(
-      mapf);
+                   maxTaskAssignments);
+  CBSTA<State, Action, int, Conflict, Constraints, const Location*, Environment>
+      cbs(mapf);
   std::vector<PlanResult<State, Action, int> > solution;
 
   Timer timer;
