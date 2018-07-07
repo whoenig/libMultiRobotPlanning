@@ -7,7 +7,7 @@
 namespace libMultiRobotPlanning {
 
 /*!
-  \example cbs.cpp Example that solves the Multi-Agent Path-Finding (MAPF)
+  \example cbs_ta.cpp Example that solves the Multi-Agent Path-Finding (MAPF)
   problem in a 2D grid world with up/down/left/right
   actions
 */
