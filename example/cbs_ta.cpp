@@ -329,8 +329,12 @@ class Environment {
     {
       State n(s.time + 1, s.x, s.y);
       if (stateValid(n) && transitionValid(s, n)) {
+        bool atGoal = true;
+        if (m_goal != nullptr) {
+          atGoal = s.x == m_goal->x && s.y == m_goal->y;
+        }
         neighbors.emplace_back(
-            Neighbor<State, Action, int>(n, Action::Wait, 1));
+            Neighbor<State, Action, int>(n, Action::Wait, atGoal ? 0 : 1));
       }
     }
     {
