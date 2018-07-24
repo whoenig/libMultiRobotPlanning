@@ -94,8 +94,9 @@ class ECBSTA {
   bool search(const std::vector<State>& initialStates,
               std::vector<PlanResult<State, Action, Cost> >& solution) {
     HighLevelNode start;
-    start.solution.resize(initialStates.size());
-    start.constraints.resize(initialStates.size());
+    size_t numAgents = initialStates.size();
+    start.solution.resize(numAgents);
+    start.constraints.resize(numAgents);
     start.cost = 0;
     start.LB = 0;
     start.id = 0;
@@ -122,7 +123,7 @@ class ECBSTA {
         std::cout << "use existing solution for agent: " << i << std::endl;
       } else {
         LowLevelEnvironment llenv(m_env, i, start.constraints[i],
-                                  start.tasks[i], start.solution);
+                                  start.task(i), start.solution);
         LowLevelSearch_t lowLevel(llenv, m_w);
         bool success = lowLevel.search(initialStates[i], start.solution[i]);
         if (!success) {
@@ -273,7 +274,7 @@ class ECBSTA {
         newNode.LB -= newNode.solution[i].fmin;
 
         LowLevelEnvironment llenv(m_env, i, newNode.constraints[i],
-                                  newNode.tasks[i], newNode.solution);
+                                  newNode.task(i), newNode.solution);
         LowLevelSearch_t lowLevel(llenv, m_w);
         bool success = lowLevel.search(initialStates[i], newNode.solution[i]);
 
@@ -306,16 +307,16 @@ class ECBSTA {
         m_env.nextTaskAssignment(n.tasks);
 
         if (n.tasks.size() > 0) {
-          n.solution.resize(n.tasks.size());
-          n.constraints.resize(n.tasks.size());
+          n.solution.resize(numAgents);
+          n.constraints.resize(numAgents);
           n.cost = 0;
           n.LB = 0;
           n.id = id;
           n.isRoot = true;
 
           bool allSuccessful = true;
-          for (size_t i = 0; i < n.tasks.size(); ++i) {
-            LowLevelEnvironment llenv(m_env, i, n.constraints[i], n.tasks[i],
+          for (size_t i = 0; i < numAgents; ++i) {
+            LowLevelEnvironment llenv(m_env, i, n.constraints[i], n.task(i),
                                       n.solution);
             LowLevelSearch_t lowLevel(llenv, m_w);
             bool success = lowLevel.search(initialStates[i], n.solution[i]);
@@ -371,7 +372,7 @@ class ECBSTA {
   struct HighLevelNode {
     std::vector<PlanResult<State, Action, Cost> > solution;
     std::vector<Constraints> constraints;
-    std::vector<Task> tasks;
+    std::map<size_t, Task> tasks; // maps from index to task (and does not contain an entry if no task was assigned)
 
     Cost cost;
     Cost LB;  // sum of fmin of solution
@@ -387,6 +388,16 @@ class ECBSTA {
       // if (cost != n.cost)
       return cost > n.cost;
       // return id > n.id;
+    }
+
+    Task* task(size_t idx)
+    {
+      Task* task = nullptr;
+      auto iter = tasks.find(idx);
+      if (iter != tasks.end()) {
+        task = &iter->second;
+      }
+      return task;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const HighLevelNode& c) {
@@ -430,7 +441,7 @@ class ECBSTA {
   struct LowLevelEnvironment {
     LowLevelEnvironment(
         Environment& env, size_t agentIdx, const Constraints& constraints,
-        Task task,
+        const Task* task,
         const std::vector<PlanResult<State, Action, Cost> >& solution)
         : m_env(env)
           // , m_agentIdx(agentIdx)

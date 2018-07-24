@@ -439,19 +439,16 @@ class Environment {
     }
   }
 
-  void nextTaskAssignment(std::vector<const Location*>& tasks) {
+  void nextTaskAssignment(std::map<size_t, Location>& tasks) {
     if (m_numTaskAssignments > m_maxTaskAssignments) {
       return;
     }
 
-    std::map<size_t, Location> solution;
-    int64_t cost = m_assignment.nextSolution(solution);
-    if (!solution.empty()) {
+    int64_t cost = m_assignment.nextSolution(tasks);
+    if (!tasks.empty()) {
       std::cout << "nextTaskAssignment: cost: " << cost << std::endl;
-
-      tasks.resize(m_numAgents, nullptr);
-      for (const auto& s : solution) {
-        tasks[s.first] = &(*m_goals.find(s.second));
+      for (const auto& s : tasks) {
+        std::cout << s.first << "->" << s.second << std::endl;
       }
 
       ++m_numTaskAssignments;
@@ -572,7 +569,7 @@ int main(int argc, char* argv[]) {
 
   Environment mapf(dimx, dimy, obstacles, startStates, goals,
                    maxTaskAssignments);
-  CBSTA<State, Action, int, Conflict, Constraints, const Location*, Environment>
+  CBSTA<State, Action, int, Conflict, Constraints, Location, Environment>
       cbs(mapf);
   std::vector<PlanResult<State, Action, int> > solution;
 

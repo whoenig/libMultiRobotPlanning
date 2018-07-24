@@ -87,8 +87,9 @@ class CBSTA {
   bool search(const std::vector<State>& initialStates,
               std::vector<PlanResult<State, Action, Cost> >& solution) {
     HighLevelNode start;
-    start.solution.resize(initialStates.size());
-    start.constraints.resize(initialStates.size());
+    size_t numAgents = initialStates.size();
+    start.solution.resize(numAgents);
+    start.constraints.resize(numAgents);
     start.cost = 0;
     start.id = 0;
     start.isRoot = true;
@@ -103,7 +104,7 @@ class CBSTA {
       bool success = false;
       if (!start.tasks.empty()) {
         LowLevelEnvironment llenv(m_env, i, start.constraints[i],
-                                  start.tasks[i]);
+                                  start.task(i));
         LowLevelSearch_t lowLevel(llenv);
         success = lowLevel.search(initialStates[i], start.solution[i]);
       }
@@ -144,19 +145,20 @@ class CBSTA {
         m_env.nextTaskAssignment(n.tasks);
 
         if (n.tasks.size() > 0) {
-          n.solution.resize(n.tasks.size());
-          n.constraints.resize(n.tasks.size());
+          n.solution.resize(numAgents);
+          n.constraints.resize(numAgents);
           n.cost = 0;
           n.id = id;
           n.isRoot = true;
 
           bool allSuccessful = true;
-          for (size_t i = 0; i < n.tasks.size(); ++i) {
-            LowLevelEnvironment llenv(m_env, i, n.constraints[i], n.tasks[i]);
+          for (size_t i = 0; i < numAgents; ++i) {
+            LowLevelEnvironment llenv(m_env, i, n.constraints[i], n.task(i));
             LowLevelSearch_t lowLevel(llenv);
             bool success = lowLevel.search(initialStates[i], n.solution[i]);
             if (!success) {
               allSuccessful = false;
+              break;
             }
             n.cost += n.solution[i].cost;
           }
@@ -192,7 +194,7 @@ class CBSTA {
         newNode.cost -= newNode.solution[i].cost;
 
         LowLevelEnvironment llenv(m_env, i, newNode.constraints[i],
-                                  newNode.tasks[i]);
+                                  newNode.task(i));
         LowLevelSearch_t lowLevel(llenv);
         bool success = lowLevel.search(initialStates[i], newNode.solution[i]);
 
@@ -215,7 +217,7 @@ class CBSTA {
   struct HighLevelNode {
     std::vector<PlanResult<State, Action, Cost> > solution;
     std::vector<Constraints> constraints;
-    std::vector<Task> tasks;
+    std::map<size_t, Task> tasks; // maps from index to task (and does not contain an entry if no task was assigned)
 
     Cost cost;
 
@@ -230,6 +232,16 @@ class CBSTA {
       // if (cost != n.cost)
       return cost > n.cost;
       // return id > n.id;
+    }
+
+    Task* task(size_t idx)
+    {
+      Task* task = nullptr;
+      auto iter = tasks.find(idx);
+      if (iter != tasks.end()) {
+        task = &iter->second;
+      }
+      return task;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const HighLevelNode& c) {
@@ -250,7 +262,7 @@ class CBSTA {
 
   struct LowLevelEnvironment {
     LowLevelEnvironment(Environment& env, size_t agentIdx,
-                        const Constraints& constraints, Task task)
+                        const Constraints& constraints, const Task* task)
         : m_env(env)
     // , m_agentIdx(agentIdx)
     // , m_constraints(constraints)
