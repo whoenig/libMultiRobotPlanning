@@ -31,53 +31,13 @@ Stockholm, Sweden, July 2018.
 */
 template <typename Agent, typename Task>
 class NextBestAssignment {
- private:
-  // Each low-level task is either a user-provided task, or a special "noTask"
-  // for this particular agent
-  struct AugmentedTask {
-    // TODO: ideally this would be union...
-    Task task;
-    Agent agent;
-
-    enum Type {
-      UserProvidedTask,  // task valid
-      NoTask,            // agent valid
-    } type;
-
-    bool operator<(const AugmentedTask& n) const {
-      if (type == n.type) {
-        if (type == UserProvidedTask) {
-          return task < n.task;
-        } else {
-          return agent < n.agent;
-        }
-      } else if (type == UserProvidedTask) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const AugmentedTask& n) {
-      if (n.type == UserProvidedTask) {
-        os << n.task;
-      } else {
-        os << n.agent;
-      }
-      return os;
-    }
-  };
-
  public:
   NextBestAssignment() : m_cost(), m_open(), m_numMatching(0) {}
 
   void setCost(const Agent& agent, const Task& task, long cost) {
     // std::cout << "setCost: " << agent << "->" << task << ": " << cost <<
     // std::endl;
-    AugmentedTask augmentedTask;
-    augmentedTask.task = task;
-    augmentedTask.type = AugmentedTask::UserProvidedTask;
-    m_cost[std::make_pair<>(agent, augmentedTask)] = cost;
+    m_cost[std::make_pair<>(agent, task)] = cost;
     if (m_agentsSet.find(agent) == m_agentsSet.end()) {
       m_agentsSet.insert(agent);
       m_agentsVec.push_back(agent);
@@ -87,18 +47,10 @@ class NextBestAssignment {
 
   // find first (optimal) solution with minimal cost
   void solve() {
-    // add (fake) costs for "NoTask" solution
-    for (const auto& agent : m_agentsSet) {
-      AugmentedTask augmentedTask;
-      augmentedTask.agent = agent;
-      augmentedTask.type = AugmentedTask::NoTask;
-      // TODO: figure out what value to use...
-      m_cost[std::make_pair<>(agent, augmentedTask)] = 1e9;
-    }
-
-    const std::set<std::pair<Agent, AugmentedTask> > I, O;
+    const std::set<std::pair<Agent, Task> > I, O;
+    const std::set<Agent> Iagents, Oagents;
     Node n;
-    n.cost = constrainedMatching(I, O, n.solution);
+    n.cost = constrainedMatching(I, O, Iagents, Oagents, n.solution);
     m_open.emplace(n);
     m_numMatching = numMatching(n.solution);
   }
@@ -114,9 +66,7 @@ class NextBestAssignment {
     // std::cout << "next: " << next << std::endl;
     m_open.pop();
     for (const auto& entry : next.solution) {
-      if (entry.second.type == AugmentedTask::UserProvidedTask) {
-        solution.insert(std::make_pair(entry.first, entry.second.task));
-      }
+      solution.insert(std::make_pair(entry.first, entry.second));
     }
     long result = next.cost;
 
@@ -131,32 +81,36 @@ class NextBestAssignment {
         Node n;
         n.I = next.I;
         n.O = next.O;
+        n.Iagents = next.Iagents;
+        n.Oagents = next.Oagents;
         // fix assignment for agents 0...i
         for (size_t j = 0; j < i; ++j) {
           const Agent& agent = m_agentsVec[j];
-          n.I.insert(std::make_pair<>(agent, next.solution.at(agent)));
-          // const auto iter = solution.find(agent);
-          // if (iter != solution.end()) {
-          //   n.I.insert(std::make_pair<>(agent, iter->second));
-          // } else {
-          //   // this agent should keep having no solution =>
-          //   // enforce that no task is allowed
-          //   for (const auto& task : m_tasksSet) {
-          //     n.O.insert(std::make_pair<>(agent, task));
-          //   }
-          // }
+          // n.I.insert(std::make_pair<>(agent, next.solution.at(agent)));
+          const auto iter = solution.find(agent);
+          if (iter != solution.end()) {
+            n.I.insert(std::make_pair<>(agent, iter->second));
+          } else {
+            // this agent should keep having no solution =>
+            // enforce that no task is allowed
+            n.Oagents.insert(agent);
+            // for (const auto& task : m_tasksSet) {
+            //   n.O.insert(std::make_pair<>(agent, task));
+            // }
+          }
         }
-        n.O.insert(
-            std::make_pair<>(m_agentsVec[i], next.solution.at(m_agentsVec[i])));
-        // const auto iter = solution.find(m_agentsVec[i]);
-        // if (iter != solution.end()) {
-        //   n.O.insert(std::make_pair<>(m_agentsVec[i], iter->second));
-        // } else {
-        //   // this agent should have a solution next
-        //   std::cout << "should have sol: " << m_agentsVec[i] << std::endl;
-        // }
+        // n.O.insert(
+        //     std::make_pair<>(m_agentsVec[i], next.solution.at(m_agentsVec[i])));
+        const auto iter = solution.find(m_agentsVec[i]);
+        if (iter != solution.end()) {
+          n.O.insert(std::make_pair<>(m_agentsVec[i], iter->second));
+        } else {
+          // this agent should have a solution next
+          // std::cout << "should have sol: " << m_agentsVec[i] << std::endl;
+          n.Iagents.insert(m_agentsVec[i]);
+        }
         // std::cout << " consider adding: " << n << std::endl;
-        n.cost = constrainedMatching(n.I, n.O, n.solution);
+        n.cost = constrainedMatching(n.I, n.O, n.Iagents, n.Oagents, n.solution);
         if (n.solution.size() > 0) {
           m_open.push(n);
           // std::cout << "add: " << n << std::endl;
@@ -170,62 +124,77 @@ class NextBestAssignment {
  protected:
   // I enforces that the respective pair is part of the solution
   // O enforces that the respective pair is not part of the solution
-  long constrainedMatching(const std::set<std::pair<Agent, AugmentedTask> >& I,
-                           const std::set<std::pair<Agent, AugmentedTask> >& O,
-                           std::map<Agent, AugmentedTask>& solution) {
+  // Iagents enforces that these agents must have a task assignment
+  // Oagents enforces that these agents should not have any task assignment
+  long constrainedMatching(const std::set<std::pair<Agent, Task> >& I,
+                           const std::set<std::pair<Agent, Task> >& O,
+                           const std::set<Agent>& Iagents,
+                           const std::set<Agent>& Oagents,
+                           std::map<Agent, Task>& solution) {
     // prepare assignment problem
 
-    Assignment<Agent, AugmentedTask> assignment;
+    Assignment<Agent, Task> assignment;
 
-    std::set<AugmentedTask> assignedTasks;
+    std::set<Task> assignedTasks;
     for (const auto& c : I) {
-      assignedTasks.insert(c.second);
-      assignment.setCost(c.first, c.second, 0);
+      if (Oagents.find(c.first) == Oagents.end()) {
+        assignedTasks.insert(c.second);
+        assignment.setCost(c.first, c.second, 0);
+      }
     }
 
     for (const auto& c : m_cost) {
       if (assignedTasks.find(c.first.second) == assignedTasks.end() &&
-          O.find(c.first) == O.end()) {
-        assignment.setCost(c.first.first, c.first.second, c.second);
+          O.find(c.first) == O.end() &&
+          Oagents.find(c.first.first) == Oagents.end()) {
+        long costOffset = 1e9;// TODO: what is a good value here?
+        // all agents that should have any solution will get a lower cost offset
+        // enforcing this agents inclusion in the result
+        if (Iagents.find(c.first.first) != Iagents.end()) {
+          costOffset = 0;
+        }
+        assignment.setCost(c.first.first, c.first.second, c.second + costOffset);
       }
     }
 
     assignment.solve(solution);
     size_t matching = numMatching(solution);
-    if (solution.size() < m_agentsSet.size() || matching < m_numMatching) {
+    // check if all agents in Iagents have an assignment as requested
+    bool solutionValid = true;
+    for (const auto& agent : Iagents) {
+      if (solution.find(agent) == solution.end()) {
+        solutionValid = false;
+        break;
+      }
+    }
+    if (!solutionValid || matching < m_numMatching) {
       solution.clear();
       return std::numeric_limits<long>::max();
     }
     return cost(solution);
   }
 
-  long cost(const std::map<Agent, AugmentedTask>& solution) {
+  long cost(const std::map<Agent, Task>& solution) {
     long result = 0;
     for (const auto& entry : solution) {
-      if (entry.second.type == AugmentedTask::UserProvidedTask) {
-        result += m_cost.at(entry);
-      }
+      result += m_cost.at(entry);
     }
     return result;
   }
 
-  size_t numMatching(const std::map<Agent, AugmentedTask>& solution) {
-    size_t result = 0;
-    for (const auto& entry : solution) {
-      if (entry.second.type == AugmentedTask::UserProvidedTask) {
-        ++result;
-      }
-    }
-    return result;
+  size_t numMatching(const std::map<Agent, Task>& solution) {
+    return solution.size();
   }
 
  private:
   struct Node {
-    Node() : I(), O(), solution(), cost(0) {}
+    Node() : I(), O(), Iagents(), Oagents(), solution(), cost(0) {}
 
-    std::set<std::pair<Agent, AugmentedTask> > I;  // enforced assignment
-    std::set<std::pair<Agent, AugmentedTask> > O;  // invalid assignments
-    std::map<Agent, AugmentedTask> solution;
+    std::set<std::pair<Agent, Task> > I;  // enforced assignment
+    std::set<std::pair<Agent, Task> > O;  // invalid assignments
+    std::set<Agent> Iagents;  // agents that must have an assignment
+    std::set<Agent> Oagents;  // agents that should not have an assignment
+    std::map<Agent, Task> solution;
     long cost;
 
     bool operator<(const Node& n) const {
@@ -245,6 +214,16 @@ class NextBestAssignment {
         os << c.first << "->" << c.second << ",";
       }
       os << std::endl;
+      os << "  Iagents: ";
+      for (const auto& c : n.Iagents) {
+        os << c << ",";
+      }
+      os << std::endl;
+      os << "  Oagents: ";
+      for (const auto& c : n.Oagents) {
+        os << c << ",";
+      }
+      os << std::endl;
       os << "  solution: ";
       for (const auto& c : n.solution) {
         os << "    " << c.first << "->" << c.second << std::endl;
@@ -255,7 +234,7 @@ class NextBestAssignment {
   };
 
  private:
-  std::map<std::pair<Agent, AugmentedTask>, long> m_cost;
+  std::map<std::pair<Agent, Task>, long> m_cost;
   std::vector<Agent> m_agentsVec;
   std::set<Agent> m_agentsSet;
   // std::set<Task> m_tasksSet;
