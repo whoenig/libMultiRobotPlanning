@@ -135,17 +135,15 @@ class NextBestAssignment {
 
     m_assignment.clear();
 
-    std::set<Task> assignedTasks;
     for (const auto& c : I) {
       if (Oagents.find(c.first) == Oagents.end()) {
-        assignedTasks.insert(c.second);
         m_assignment.setCost(c.first, c.second, 0);
       }
     }
 
     for (const auto& c : m_cost) {
-      if (assignedTasks.find(c.first.second) == assignedTasks.end() &&
-          O.find(c.first) == O.end() &&
+      if (O.find(c.first) == O.end() &&
+          I.find(c.first) == I.end() &&
           Oagents.find(c.first.first) == Oagents.end()) {
         long costOffset = 1e9;// TODO: what is a good value here?
         // all agents that should have any solution will get a lower cost offset
@@ -159,6 +157,12 @@ class NextBestAssignment {
 
     m_assignment.solve(solution);
     size_t matching = numMatching(solution);
+
+    // std::cout << "constrainedMatching: internal Solution: " << std::endl;
+    // for (const auto& c : solution) {
+    //   std::cout << "    " << c.first << "->" << c.second << std::endl;
+    // }
+
     // check if all agents in Iagents have an assignment as requested
     bool solutionValid = true;
     for (const auto& agent : Iagents) {
@@ -167,6 +171,16 @@ class NextBestAssignment {
         break;
       }
     }
+    // check that I constraints have been fulfilled
+    for (const auto& c : I) {
+      const auto& iter = solution.find(c.first);
+      if (iter == solution.end()
+          || !(iter->second == c.second)) {
+        solutionValid = false;
+        break;
+      }
+    }
+
     if (!solutionValid || matching < m_numMatching) {
       solution.clear();
       return std::numeric_limits<long>::max();
