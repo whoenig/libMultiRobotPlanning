@@ -29,10 +29,10 @@ Stockholm, Sweden, July 2018.
 \tparam Agent Type of the agent. Needs to be copy'able and comparable
 \tparam Task Type of task. Needs to be copy'able and comparable
 */
-template <typename Agent, typename Task>
+template <typename Agent, typename Task, typename Assignment = Assignment<Agent, Task> >
 class NextBestAssignment {
  public:
-  NextBestAssignment() : m_cost(), m_open(), m_numMatching(0) {}
+  NextBestAssignment(const Assignment& assignment = Assignment()) : m_assignment(assignment), m_cost(), m_open(), m_numMatching(0) {}
 
   void setCost(const Agent& agent, const Task& task, long cost) {
     // std::cout << "setCost: " << agent << "->" << task << ": " << cost <<
@@ -133,13 +133,13 @@ class NextBestAssignment {
                            std::map<Agent, Task>& solution) {
     // prepare assignment problem
 
-    Assignment<Agent, Task> assignment;
+    m_assignment.clear();
 
     std::set<Task> assignedTasks;
     for (const auto& c : I) {
       if (Oagents.find(c.first) == Oagents.end()) {
         assignedTasks.insert(c.second);
-        assignment.setCost(c.first, c.second, 0);
+        m_assignment.setCost(c.first, c.second, 0);
       }
     }
 
@@ -153,11 +153,11 @@ class NextBestAssignment {
         if (Iagents.find(c.first.first) != Iagents.end()) {
           costOffset = 0;
         }
-        assignment.setCost(c.first.first, c.first.second, c.second + costOffset);
+        m_assignment.setCost(c.first.first, c.first.second, c.second + costOffset);
       }
     }
 
-    assignment.solve(solution);
+    m_assignment.solve(solution);
     size_t matching = numMatching(solution);
     // check if all agents in Iagents have an assignment as requested
     bool solutionValid = true;
@@ -234,6 +234,7 @@ class NextBestAssignment {
   };
 
  private:
+  Assignment m_assignment;
   std::map<std::pair<Agent, Task>, long> m_cost;
   std::vector<Agent> m_agentsVec;
   std::set<Agent> m_agentsSet;

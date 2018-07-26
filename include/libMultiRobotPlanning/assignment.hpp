@@ -31,6 +31,24 @@ class Assignment {
     m_sinkVertex = boost::add_vertex(m_graph);
   }
 
+  void clear() {
+    // std::cout << "Asg: clear" << std::endl;
+    std::set<edge_t> edgesToRemove;
+    for (const auto& agent : m_agents) {
+      auto es = boost::out_edges(agent.right, m_graph);
+      for (auto eit = es.first; eit != es.second; ++eit) {
+        if (!m_graph[*eit].isReverseEdge) {
+          edgesToRemove.insert(*eit);
+          edgesToRemove.insert(m_graph[*eit].reverseEdge);
+        }
+      }
+    }
+
+    for (const auto& e : edgesToRemove) {
+      boost::remove_edge(e, m_graph);
+    }
+  }
+
   void setCost(const Agent& agent, const Task& task, long cost) {
     // std::cout << "setCost: " << agent << "->" << task << " cost: " << cost <<
     // std::endl;
