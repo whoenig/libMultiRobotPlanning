@@ -43,15 +43,35 @@ class TestNextBestAssignment(unittest.TestCase):
     mapping[("a1", "t0")] = 1
     r = self.runNextBestAssignment(mapping)
     # check number of solutions
-    self.assertTrue(len(r["solutions"]) == 2)
+    self.assertEqual(len(r["solutions"]), 2)
     # check first solution
     sol = r["solutions"][0]
-    self.assertTrue(sol["cost"] == 1)
-    self.assertTrue(sol["assignment"]["a1"] == "t0")
+    self.assertEqual(sol["cost"], 1)
+    self.assertEqual(sol["assignment"]["a1"], "t0")
     # check second solution
     sol = r["solutions"][1]
-    self.assertTrue(sol["cost"] == 2)
-    self.assertTrue(sol["assignment"]["a0"] == "t0")
+    self.assertEqual(sol["cost"], 2)
+    self.assertEqual(sol["assignment"]["a0"], "t0")
+
+  def test_2by2(self):
+    mapping = dict()
+    mapping[("a0", "t0")] = 90
+    mapping[("a0", "t1")] = 76
+    mapping[("a1", "t0")] = 35
+    mapping[("a1", "t1")] = 85
+    r = self.runNextBestAssignment(mapping)
+    # check number of solutions
+    self.assertEqual(len(r["solutions"]), 2)
+    # check best solution
+    sol = r["solutions"][0]
+    self.assertEqual(sol["cost"], 111)
+    self.assertEqual(sol["assignment"]["a0"], "t1")
+    self.assertEqual(sol["assignment"]["a1"], "t0")
+    # check last solution
+    sol = r["solutions"][-1]
+    self.assertEqual(sol["cost"], 175)
+    self.assertEqual(sol["assignment"]["a0"], "t0")
+    self.assertEqual(sol["assignment"]["a1"], "t1")
 
   def test_4by4(self):
     mapping = dict()
@@ -73,21 +93,21 @@ class TestNextBestAssignment(unittest.TestCase):
     mapping[("a3", "t3")] = 115
     r = self.runNextBestAssignment(mapping)
     # check number of solutions
-    self.assertTrue(len(r["solutions"]) == 24)
+    self.assertEqual(len(r["solutions"]), 24)
     # check best solution
     sol = r["solutions"][0]
-    self.assertTrue(sol["cost"] == 275)
-    self.assertTrue(sol["assignment"]["a0"] == "t3")
-    self.assertTrue(sol["assignment"]["a1"] == "t2")
-    self.assertTrue(sol["assignment"]["a2"] == "t1")
-    self.assertTrue(sol["assignment"]["a3"] == "t0")
+    self.assertEqual(sol["cost"], 275)
+    self.assertEqual(sol["assignment"]["a0"], "t3")
+    self.assertEqual(sol["assignment"]["a1"], "t2")
+    self.assertEqual(sol["assignment"]["a2"], "t1")
+    self.assertEqual(sol["assignment"]["a3"], "t0")
     # check last solution
     sol = r["solutions"][-1]
-    self.assertTrue(sol["cost"] == 400)
-    self.assertTrue(sol["assignment"]["a0"] == "t2")
-    self.assertTrue(sol["assignment"]["a1"] == "t1")
-    self.assertTrue(sol["assignment"]["a2"] == "t0")
-    self.assertTrue(sol["assignment"]["a3"] == "t3")
+    self.assertEqual(sol["cost"], 400)
+    self.assertEqual(sol["assignment"]["a0"], "t2")
+    self.assertEqual(sol["assignment"]["a1"], "t1")
+    self.assertEqual(sol["assignment"]["a2"], "t0")
+    self.assertEqual(sol["assignment"]["a3"], "t3")
 
 if __name__ == '__main__':
     unittest.main()
