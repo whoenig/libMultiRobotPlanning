@@ -8,6 +8,7 @@ The following algorithms are currently supported:
 * Single-Robot Algorithms
   * A*
   * A* epsilon (also known as focal search)
+  * SIPP (Safe Interval Path Planning)
 
 * Multi-Robot Algorithms
   * Conflict-Based Search (CBS)

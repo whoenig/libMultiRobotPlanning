@@ -11,6 +11,7 @@ Algorithm   | Optimality         |
 ------------|--------------------|
 [A*](@ref libMultiRobotPlanning::AStar)          | optimal            |
 [A*_epsilon](@ref libMultiRobotPlanning::AStarEpsilon)          | w-bounded suboptimal            |
+[SIPP](@ref libMultiRobotPlanning::SIPP)          | optimal            |
 
 ### Multi-Robot
 

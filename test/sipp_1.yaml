@@ -1,0 +1,9 @@
+start: [0, 1]
+goal: [2, 3]
+environment:
+  size: [10, 10]
+  obstacles: []
+  collisionIntervals:
+    - location: [2, 3]
+      intervals:
+        - [0, 8]

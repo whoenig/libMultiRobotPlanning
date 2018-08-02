@@ -44,6 +44,7 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/next_best_assignment.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/planresult.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/sipp.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star_epsilon.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/assignment.cpp
@@ -54,6 +55,7 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/sipp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
 )
 
@@ -147,6 +149,15 @@ add_executable(next_best_assignment
   example/next_best_assignment.cpp
 )
 target_link_libraries(next_best_assignment
+  ${Boost_LIBRARIES}
+  yaml-cpp
+)
+
+## sipp
+add_executable(sipp
+  example/sipp.cpp
+)
+target_link_libraries(sipp
   ${Boost_LIBRARIES}
   yaml-cpp
 )
