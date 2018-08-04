@@ -15,6 +15,7 @@ The following algorithms are currently supported:
   * Enhanced Conflict-Based Search (ECBS)
   * Conflict-Based Search with Optimal Task Assignment (CBS-TA)
   * Enhanced Conflict-Based Search with Optimal Task Assignment (ECBS-TA)
+  * Prioritized Planning using SIPP (example code for SIPP)
 
 * Assignment Algorithms
   * Minimum sum-of-cost (flow-based; integer costs; any number of agents/tasks)

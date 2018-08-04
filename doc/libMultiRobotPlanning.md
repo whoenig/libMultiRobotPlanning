@@ -21,6 +21,7 @@ Algorithm   | Optimality         |
 [Enhanced Conflict-Based Search (ECBS)](@ref libMultiRobotPlanning::ECBS)          | w-bounded suboptimal (sum-of-cost)           |
 [Conflict-Based Search with Optimal Task Assignment (CBS-TA)](@ref libMultiRobotPlanning::CBSTA)          | optimal (sum-of-cost)           |
 [Enhanced Conflict-Based Search with Optimal Task Assignment (ECBS-TA)](@ref libMultiRobotPlanning::ECBSTA)          | w-bounded suboptimal (sum-of-cost)           |
+[Prioritized Planning with SIPP]        | No           |
 
 ### Assignment
 

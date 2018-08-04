@@ -52,6 +52,7 @@ set(ALL_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs_ta.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs_ta.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/mapf_prioritized_sipp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.hpp
@@ -158,6 +159,15 @@ add_executable(sipp
   example/sipp.cpp
 )
 target_link_libraries(sipp
+  ${Boost_LIBRARIES}
+  yaml-cpp
+)
+
+## mapf_prioritized_sipp
+add_executable(mapf_prioritized_sipp
+  example/mapf_prioritized_sipp.cpp
+)
+target_link_libraries(mapf_prioritized_sipp
   ${Boost_LIBRARIES}
   yaml-cpp
 )
