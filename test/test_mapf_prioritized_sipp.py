@@ -47,6 +47,9 @@ class TestMAPFPrioritizedSIPP(unittest.TestCase):
     r = self.exec("../test/mapf_swap4.yaml")
     self.assertEqual(r["statistics"]["cost"], 28)
 
+  def test_someAtGoal(self):
+    r = self.exec("../test/mapf_someAtGoal.yaml")
+    self.assertEqual(r["statistics"]["cost"], 0)
 
 if __name__ == '__main__':
     unittest.main()

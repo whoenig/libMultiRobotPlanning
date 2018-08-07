@@ -231,6 +231,7 @@ class SIPP {
 
       // std::cout << location << ": " << std::endl;
       if (intervals.size() > 0) {
+        m_safeIntervals[location]; // create empty safe interval
         int start = 0;
         for (const auto& interval : sortedIntervals) {
           // std::cout << "  ci: " << interval.start << " - " << interval.end <<
