@@ -83,13 +83,19 @@ class SIPP {
   }
 
   bool search(const State& startState, const Action& waitAction,
-              PlanResult<State, Action, Cost>& solution) {
+              PlanResult<State, Action, Cost>& solution, Cost startTime = 0) {
     PlanResult<SIPPState, SIPPAction, Cost> astarsolution;
-    bool success = m_astar.search(SIPPState(startState, 0), astarsolution);
-    solution.cost = astarsolution.cost;
-    solution.fmin = astarsolution.fmin;
+    solution.cost = 0;
+    solution.fmin = 0;
     solution.actions.clear();
     solution.states.clear();
+    size_t interval;
+    if (!m_env.findSafeInterval(startState, startTime, interval)) {
+      return false;
+    }
+    bool success = m_astar.search(SIPPState(startState, interval), astarsolution, startTime);
+    solution.cost = astarsolution.cost;
+    solution.fmin = astarsolution.fmin;
     for (size_t i = 0; i < astarsolution.actions.size(); ++i) {
       Cost waitTime =
           astarsolution.actions[i].second - astarsolution.actions[i].first.time;
@@ -257,6 +263,18 @@ class SIPP {
       // for (const auto& si : m_safeIntervals[location]) {
       //   std::cout << "  si: " << si.start << " - " << si.end << std::endl;
       // }
+    }
+
+    bool findSafeInterval(const State& state, Cost time, size_t& interval)
+    {
+      const auto& si = safeIntervals(m_env.getLocation(state));
+      for (size_t idx = 0; idx < si.size(); ++idx) {
+        if (si[idx].start <= time && si[idx].end >= time) {
+          interval = idx;
+          return true;
+        }
+      }
+      return false;
     }
 
    private:
