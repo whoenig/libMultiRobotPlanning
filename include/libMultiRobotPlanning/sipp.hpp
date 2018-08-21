@@ -5,8 +5,8 @@
 #endif
 
 #include <boost/heap/d_ary_heap.hpp>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 
 // #include "neighbor.hpp"
 // #include "planresult.hpp"
@@ -135,6 +135,10 @@ class SIPP {
 
     bool operator==(const SIPPState& other) const {
       return std::tie(state, interval) == std::tie(other.state, other.interval);
+    }
+
+    bool operator<(const SIPPState& other) const {
+      return std::tie(state, interval) < std::tie(other.state, other.interval);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const SIPPState& s) {
@@ -296,7 +300,7 @@ class SIPP {
    private:
     Environment& m_env;
     Cost m_lastGScore;
-    std::unordered_map<Location, std::vector<interval> > m_safeIntervals;
+    std::map<Location, std::vector<interval> > m_safeIntervals;
   };
 
  private:

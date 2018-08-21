@@ -5,8 +5,8 @@
 #endif
 
 #include <boost/heap/d_ary_heap.hpp>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 
 #include "neighbor.hpp"
 #include "planresult.hpp"
@@ -68,11 +68,9 @@ class AStar {
     solution.cost = 0;
 
     openSet_t openSet;
-    std::unordered_map<State, fibHeapHandle_t, StateHasher> stateToHeap;
-    std::unordered_set<State, StateHasher> closedSet;
-    std::unordered_map<State, std::tuple<State, Action, Cost, Cost>,
-                       StateHasher>
-        cameFrom;
+    std::map<State, fibHeapHandle_t> stateToHeap;
+    std::set<State> closedSet;
+    std::map<State, std::tuple<State, Action, Cost, Cost> > cameFrom;
 
     auto handle = openSet.push(
         Node(startState, m_env.admissibleHeuristic(startState), initialCost));
