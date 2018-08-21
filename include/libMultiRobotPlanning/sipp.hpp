@@ -82,6 +82,10 @@ class SIPP {
     m_env.setCollisionIntervals(location, intervals);
   }
 
+  bool mightHaveSolution(const State& goal) {
+    return m_env.mightHaveSolution(goal);
+  }
+
   bool search(const State& startState, const Action& waitAction,
               PlanResult<State, Action, Cost>& solution, Cost startTime = 0) {
     PlanResult<SIPPState, SIPPAction, Cost> astarsolution;
@@ -167,6 +171,12 @@ class SIPP {
 
     Cost admissibleHeuristic(const SIPPState& s) {
       return m_env.admissibleHeuristic(s.state);
+    }
+
+    bool mightHaveSolution(const State& goal) {
+      return m_env.isSolution(goal) &&
+        safeIntervals(m_env.getLocation(goal)).back().end ==
+          std::numeric_limits<Cost>::max();
     }
 
     bool isSolution(const SIPPState& s) {
