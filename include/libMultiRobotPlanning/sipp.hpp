@@ -239,6 +239,7 @@ class SIPP {
       if (intervals.size() > 0) {
         m_safeIntervals[location]; // create empty safe interval
         int start = 0;
+        int lastEnd = 0;
         for (const auto& interval : sortedIntervals) {
           // std::cout << "  ci: " << interval.start << " - " << interval.end <<
           // std::endl;
@@ -252,16 +253,20 @@ class SIPP {
           }
           // }
           start = interval.end + 1;
+          lastEnd = interval.end;
         }
-        if (start - 1 != std::numeric_limits<int>::max()) {
+        if (lastEnd < std::numeric_limits<int>::max()) {
           // assert(start < std::numeric_limits<int>::max());
           m_safeIntervals[location].push_back(
               {start, std::numeric_limits<int>::max()});
         }
       }
 
-      // for (const auto& si : m_safeIntervals[location]) {
-      //   std::cout << "  si: " << si.start << " - " << si.end << std::endl;
+      // auto iter = m_safeIntervals.find(location);
+      // if (iter != m_safeIntervals.end()) {
+      //   for (const auto& si : iter->second) {
+      //     std::cout << "  si: " << si.start << " - " << si.end << std::endl;
+      //   }
       // }
     }
 
