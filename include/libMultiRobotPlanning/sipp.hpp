@@ -178,9 +178,10 @@ class SIPP {
     }
 
     bool mightHaveSolution(const State& goal) {
+      const auto& si = safeIntervals(m_env.getLocation(goal));
       return m_env.isSolution(goal) &&
-        safeIntervals(m_env.getLocation(goal)).back().end ==
-          std::numeric_limits<Cost>::max();
+        !si.empty() &&
+        si.back().end == std::numeric_limits<Cost>::max();
     }
 
     bool isSolution(const SIPPState& s) {
