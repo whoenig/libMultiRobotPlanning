@@ -4,7 +4,9 @@
 #include <boost/heap/fibonacci_heap.hpp>
 #endif
 
+#include <boost/functional/hash.hpp>
 #include <boost/heap/d_ary_heap.hpp>
+
 #include <unordered_map>
 #include <unordered_set>
 
