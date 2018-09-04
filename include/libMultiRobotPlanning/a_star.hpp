@@ -87,6 +87,10 @@ class AStar {
       Node current = openSet.top();
       m_env.onExpandNode(current.state, current.fScore, current.gScore);
 
+      if (current.gScore > maxCost) {
+        return false;
+      }
+
       if (m_env.isSolution(current.state)) {
         solution.states.clear();
         solution.actions.clear();
@@ -105,10 +109,6 @@ class AStar {
         solution.fmin = current.fScore;
 
         return true;
-      }
-
-      if (current.gScore > maxCost) {
-        return false;
       }
 
       openSet.pop();
