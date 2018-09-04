@@ -61,7 +61,10 @@ class AStar {
   AStar(Environment& environment) : m_env(environment) {}
 
   bool search(const State& startState,
-              PlanResult<State, Action, Cost>& solution, Cost initialCost = 0) {
+              PlanResult<State, Action,
+              Cost>& solution,
+              Cost initialCost = 0,
+              Cost maxCost = std::numeric_limits<Cost>::max()) {
     solution.states.clear();
     solution.states.push_back(std::make_pair<>(startState, 0));
     solution.actions.clear();
@@ -102,6 +105,10 @@ class AStar {
         solution.fmin = current.fScore;
 
         return true;
+      }
+
+      if (current.gScore > maxCost) {
+        return false;
       }
 
       openSet.pop();
