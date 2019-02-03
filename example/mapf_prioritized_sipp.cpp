@@ -8,9 +8,9 @@
 
 #include <libMultiRobotPlanning/sipp.hpp>
 
-using libMultiRobotPlanning::SIPP;
 using libMultiRobotPlanning::Neighbor;
 using libMultiRobotPlanning::PlanResult;
+using libMultiRobotPlanning::SIPP;
 
 struct State {
   State(int x, int y) : x(x), y(y) {}
@@ -94,7 +94,7 @@ class Environment {
   State getLocation(const State& s) { return s; }
 
   void getNeighbors(const State& s,
-                    std::vector<Neighbor<State, Action, int> >& neighbors) {
+                    std::vector<Neighbor<State, Action, int>>& neighbors) {
     neighbors.clear();
 
     State up(s.x, s.y + 1);
@@ -222,7 +222,8 @@ int main(int argc, char* argv[]) {
     sipp_t sipp(env);
 
     for (const auto& collisionIntervals : allCollisionIntervals) {
-      sipp.setCollisionIntervals(collisionIntervals.first, collisionIntervals.second);
+      sipp.setCollisionIntervals(collisionIntervals.first,
+                                 collisionIntervals.second);
     }
 
     // Plan
@@ -237,21 +238,24 @@ int main(int argc, char* argv[]) {
       auto lastState = solution.states[0];
       for (size_t i = 1; i < solution.states.size(); ++i) {
         if (solution.states[i].first != lastState.first) {
-          allCollisionIntervals[lastState.first].push_back(
-            sipp_t::interval(lastState.second, solution.states[i].second - 1));
+          allCollisionIntervals[lastState.first].push_back(sipp_t::interval(
+              lastState.second, solution.states[i].second - 1));
           lastState = solution.states[i];
         }
       }
       allCollisionIntervals[solution.states.back().first].push_back(
-            sipp_t::interval(solution.states.back().second, std::numeric_limits<int>::max()));
+          sipp_t::interval(solution.states.back().second,
+                           std::numeric_limits<int>::max()));
       // update statistics
       cost += solution.cost;
 
       // print solution
       for (size_t i = 0; i < solution.actions.size(); ++i) {
-        std::cout << solution.states[i].second << ": " << solution.states[i].first
-                  << "->" << solution.actions[i].first
-                  << "(cost: " << solution.actions[i].second << ")" << std::endl;
+        std::cout << solution.states[i].second << ": "
+                  << solution.states[i].first << "->"
+                  << solution.actions[i].first
+                  << "(cost: " << solution.actions[i].second << ")"
+                  << std::endl;
       }
       std::cout << solution.states.back().second << ": "
                 << solution.states.back().first << std::endl;
@@ -265,8 +269,6 @@ int main(int argc, char* argv[]) {
       std::cout << "Planning NOT successful!" << std::endl;
       out << "    []" << std::endl;
     }
-
-
   }
 
   out << "statistics:" << std::endl;
@@ -274,11 +276,9 @@ int main(int argc, char* argv[]) {
   // out << "  makespan: " << makespan << std::endl;
   // out << "  runtime: " << timer.elapsedSeconds() << std::endl;
 
-
-
-
   // for (const auto& node : config["environment"]["collisionIntervals"]) {
-  //   State state(node["location"][0].as<int>(), node["location"][1].as<int>());
+  //   State state(node["location"][0].as<int>(),
+  //   node["location"][1].as<int>());
 
   //   std::vector<sipp_t::interval> collisionIntervals;
 
@@ -288,8 +288,6 @@ int main(int argc, char* argv[]) {
   //   }
   //   sipp.setCollisionIntervals(state, collisionIntervals);
   // }
-
-
 
   return 0;
 }

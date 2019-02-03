@@ -12,8 +12,8 @@
 
 using libMultiRobotPlanning::CBSTA;
 using libMultiRobotPlanning::Neighbor;
-using libMultiRobotPlanning::PlanResult;
 using libMultiRobotPlanning::NextBestAssignment;
+using libMultiRobotPlanning::PlanResult;
 
 struct State {
   State(int time, int x, int y) : time(time), x(x), y(y) {}
@@ -272,8 +272,9 @@ class Environment {
     for (size_t i = 0; i < startStates.size(); ++i) {
       for (const auto& goal : goals[i]) {
         m_assignment.setCost(
-            i, goal, m_heuristic.getValue(
-                         Location(startStates[i].x, startStates[i].y), goal));
+            i, goal,
+            m_heuristic.getValue(Location(startStates[i].x, startStates[i].y),
+                                 goal));
         m_goals.insert(goal);
       }
     }
@@ -569,8 +570,8 @@ int main(int argc, char* argv[]) {
 
   Environment mapf(dimx, dimy, obstacles, startStates, goals,
                    maxTaskAssignments);
-  CBSTA<State, Action, int, Conflict, Constraints, Location, Environment>
-      cbs(mapf);
+  CBSTA<State, Action, int, Conflict, Constraints, Location, Environment> cbs(
+      mapf);
   std::vector<PlanResult<State, Action, int> > solution;
 
   Timer timer;

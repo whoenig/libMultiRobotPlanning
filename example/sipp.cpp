@@ -8,9 +8,9 @@
 
 #include <libMultiRobotPlanning/sipp.hpp>
 
-using libMultiRobotPlanning::SIPP;
 using libMultiRobotPlanning::Neighbor;
 using libMultiRobotPlanning::PlanResult;
+using libMultiRobotPlanning::SIPP;
 
 struct State {
   State(int x, int y) : x(x), y(y) {}

@@ -18,18 +18,17 @@ namespace libMultiRobotPlanning {
   actions
 */
 
-/*! \brief Enhanced Conflict-Based-Search with Optimal Task Assignment (ECBS-TA) algorithm
-to find tasks and collision-free paths jointly, minimizing sum-of-cost.
+/*! \brief Enhanced Conflict-Based-Search with Optimal Task Assignment (ECBS-TA)
+algorithm to find tasks and collision-free paths jointly, minimizing
+sum-of-cost.
 
-This class implements the Enhanced Conflict-Based-Search with Optimal Task Assignment
-(ECBS-TA) algorithm.
-This algorithm assigns tasks and finds collision-free path for multiple agents
-with start and
-goal locations given for each agent.
-ECBS-TA is an extension of the ECBS algorithms, operating in a search forest
-rather
-than a search tree (where each root node refers to a possible assignment).
-ECBS-TA is bounded suboptimal with respect to the sum-of-individual costs.
+This class implements the Enhanced Conflict-Based-Search with Optimal Task
+Assignment (ECBS-TA) algorithm. This algorithm assigns tasks and finds
+collision-free path for multiple agents with start and goal locations given for
+each agent. ECBS-TA is an extension of the ECBS algorithms, operating in a
+search forest rather than a search tree (where each root node refers to a
+possible assignment). ECBS-TA is bounded suboptimal with respect to the
+sum-of-individual costs.
 
 Details of the algorithm can be found in the following paper:\n
 W. Hönig, S. Kiesel, A. Tinka, J. W. Durham, and N. Ayanian.\n
@@ -122,8 +121,8 @@ class ECBSTA {
         start.solution[i] = solution[i];
         std::cout << "use existing solution for agent: " << i << std::endl;
       } else {
-        LowLevelEnvironment llenv(m_env, i, start.constraints[i],
-                                  start.task(i), start.solution);
+        LowLevelEnvironment llenv(m_env, i, start.constraints[i], start.task(i),
+                                  start.solution);
         LowLevelSearch_t lowLevel(llenv, m_w);
         bool success = lowLevel.search(initialStates[i], start.solution[i]);
         if (!success) {
@@ -372,7 +371,8 @@ class ECBSTA {
   struct HighLevelNode {
     std::vector<PlanResult<State, Action, Cost> > solution;
     std::vector<Constraints> constraints;
-    std::map<size_t, Task> tasks; // maps from index to task (and does not contain an entry if no task was assigned)
+    std::map<size_t, Task> tasks;  // maps from index to task (and does not
+                                   // contain an entry if no task was assigned)
 
     Cost cost;
     Cost LB;  // sum of fmin of solution
@@ -390,8 +390,7 @@ class ECBSTA {
       // return id > n.id;
     }
 
-    Task* task(size_t idx)
-    {
+    Task* task(size_t idx) {
       Task* task = nullptr;
       auto iter = tasks.find(idx);
       if (iter != tasks.end()) {

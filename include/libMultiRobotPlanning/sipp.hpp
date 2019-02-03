@@ -99,7 +99,8 @@ class SIPP {
     if (!m_env.findSafeInterval(startState, startTime, interval)) {
       return false;
     }
-    bool success = m_astar.search(SIPPState(startState, interval), astarsolution, startTime);
+    bool success = m_astar.search(SIPPState(startState, interval),
+                                  astarsolution, startTime);
     solution.cost = astarsolution.cost - startTime;
     solution.fmin = astarsolution.fmin;
     for (size_t i = 0; i < astarsolution.actions.size(); ++i) {
@@ -177,9 +178,8 @@ class SIPP {
 
     bool mightHaveSolution(const State& goal) {
       const auto& si = safeIntervals(m_env.getLocation(goal));
-      return m_env.isSolution(goal) &&
-        !si.empty() &&
-        si.back().end == std::numeric_limits<Cost>::max();
+      return m_env.isSolution(goal) && !si.empty() &&
+             si.back().end == std::numeric_limits<Cost>::max();
     }
 
     bool isSolution(const SIPPState& s) {
@@ -250,7 +250,7 @@ class SIPP {
 
       // std::cout << location << ": " << std::endl;
       if (intervals.size() > 0) {
-        m_safeIntervals[location]; // create empty safe interval
+        m_safeIntervals[location];  // create empty safe interval
         int start = 0;
         int lastEnd = 0;
         for (const auto& interval : sortedIntervals) {
@@ -283,8 +283,7 @@ class SIPP {
       // }
     }
 
-    bool findSafeInterval(const State& state, Cost time, size_t& interval)
-    {
+    bool findSafeInterval(const State& state, Cost time, size_t& interval) {
       const auto& si = safeIntervals(m_env.getLocation(state));
       for (size_t idx = 0; idx < si.size(); ++idx) {
         if (si[idx].start <= time && si[idx].end >= time) {
