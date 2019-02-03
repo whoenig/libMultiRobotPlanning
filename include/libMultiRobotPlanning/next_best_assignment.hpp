@@ -29,10 +29,12 @@ Stockholm, Sweden, July 2018.
 \tparam Agent Type of the agent. Needs to be copy'able and comparable
 \tparam Task Type of task. Needs to be copy'able and comparable
 */
-template <typename Agent, typename Task, typename Assignment = Assignment<Agent, Task> >
+template <typename Agent, typename Task,
+          typename Assignment = Assignment<Agent, Task> >
 class NextBestAssignment {
  public:
-  NextBestAssignment(const Assignment& assignment = Assignment()) : m_assignment(assignment), m_cost(), m_open(), m_numMatching(0) {}
+  NextBestAssignment(const Assignment& assignment = Assignment())
+      : m_assignment(assignment), m_cost(), m_open(), m_numMatching(0) {}
 
   void setCost(const Agent& agent, const Task& task, long cost) {
     // std::cout << "setCost: " << agent << "->" << task << ": " << cost <<
@@ -100,7 +102,8 @@ class NextBestAssignment {
           }
         }
         // n.O.insert(
-        //     std::make_pair<>(m_agentsVec[i], next.solution.at(m_agentsVec[i])));
+        //     std::make_pair<>(m_agentsVec[i],
+        //     next.solution.at(m_agentsVec[i])));
         const auto iter = solution.find(m_agentsVec[i]);
         if (iter != solution.end()) {
           n.O.insert(std::make_pair<>(m_agentsVec[i], iter->second));
@@ -110,7 +113,8 @@ class NextBestAssignment {
           n.Iagents.insert(m_agentsVec[i]);
         }
         // std::cout << " consider adding: " << n << std::endl;
-        n.cost = constrainedMatching(n.I, n.O, n.Iagents, n.Oagents, n.solution);
+        n.cost =
+            constrainedMatching(n.I, n.O, n.Iagents, n.Oagents, n.solution);
         if (n.solution.size() > 0) {
           m_open.push(n);
           // std::cout << "add: " << n << std::endl;
@@ -142,16 +146,16 @@ class NextBestAssignment {
     }
 
     for (const auto& c : m_cost) {
-      if (O.find(c.first) == O.end() &&
-          I.find(c.first) == I.end() &&
+      if (O.find(c.first) == O.end() && I.find(c.first) == I.end() &&
           Oagents.find(c.first.first) == Oagents.end()) {
-        long costOffset = 1e9;// TODO: what is a good value here?
+        long costOffset = 1e9;  // TODO: what is a good value here?
         // all agents that should have any solution will get a lower cost offset
         // enforcing this agents inclusion in the result
         if (Iagents.find(c.first.first) != Iagents.end()) {
           costOffset = 0;
         }
-        m_assignment.setCost(c.first.first, c.first.second, c.second + costOffset);
+        m_assignment.setCost(c.first.first, c.first.second,
+                             c.second + costOffset);
       }
     }
 
@@ -174,8 +178,7 @@ class NextBestAssignment {
     // check that I constraints have been fulfilled
     for (const auto& c : I) {
       const auto& iter = solution.find(c.first);
-      if (iter == solution.end()
-          || !(iter->second == c.second)) {
+      if (iter == solution.end() || !(iter->second == c.second)) {
         solutionValid = false;
         break;
       }
@@ -206,7 +209,7 @@ class NextBestAssignment {
 
     std::set<std::pair<Agent, Task> > I;  // enforced assignment
     std::set<std::pair<Agent, Task> > O;  // invalid assignments
-    std::set<Agent> Iagents;  // agents that must have an assignment
+    std::set<Agent> Iagents;              // agents that must have an assignment
     std::set<Agent> Oagents;  // agents that should not have an assignment
     std::map<Agent, Task> solution;
     long cost;

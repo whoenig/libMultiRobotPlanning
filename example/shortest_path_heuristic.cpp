@@ -40,7 +40,7 @@ struct hash<Location> {
     return seed;
   }
 };
-}
+}  // namespace std
 
 #include "shortest_path_heuristic.hpp"
 

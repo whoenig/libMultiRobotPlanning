@@ -217,7 +217,8 @@ class CBSTA {
   struct HighLevelNode {
     std::vector<PlanResult<State, Action, Cost> > solution;
     std::vector<Constraints> constraints;
-    std::map<size_t, Task> tasks; // maps from index to task (and does not contain an entry if no task was assigned)
+    std::map<size_t, Task> tasks;  // maps from index to task (and does not
+                                   // contain an entry if no task was assigned)
 
     Cost cost;
 
@@ -234,8 +235,7 @@ class CBSTA {
       // return id > n.id;
     }
 
-    Task* task(size_t idx)
-    {
+    Task* task(size_t idx) {
       Task* task = nullptr;
       auto iter = tasks.find(idx);
       if (iter != tasks.end()) {
