@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env python3
 import yaml
 import matplotlib
 # matplotlib.use("Agg")
@@ -27,7 +27,9 @@ class Animation:
     # self.ax.set_frame_on(False)
 
     self.patches = []
+    self.artists = []
     self.agents = dict()
+    self.agent_names = dict()
     # create boundary patch
     xmin = -0.5
     ymin = -0.5
@@ -59,6 +61,10 @@ class Animation:
       self.agents[name].original_face_color = Colors[i%len(Colors)]
       self.patches.append(self.agents[name])
       self.T = max(self.T, schedule["schedule"][name][-1]["t"])
+      self.agent_names[name] = self.ax.text(d["start"][0], d["start"][1], name.replace('agent', ''))
+      self.agent_names[name].set_horizontalalignment('center')
+      self.agent_names[name].set_verticalalignment('center')
+      self.artists.append(self.agent_names[name])
 
 
 
@@ -88,15 +94,17 @@ class Animation:
   def init_func(self):
     for p in self.patches:
       self.ax.add_patch(p)
-    return self.patches
+    for a in self.artists:
+      self.ax.add_artist(a)
+    return self.patches + self.artists
 
   def animate_func(self, i):
-
     for agent_name in self.schedule["schedule"]:
       agent = schedule["schedule"][agent_name]
       pos = self.getState(i / 10, agent)
       p = (pos[0], pos[1])
       self.agents[agent_name].center = p
+      self.agent_names[agent_name].set_position(p)
 
     # reset all colors
     for _,agent in self.agents.items():
@@ -113,9 +121,9 @@ class Animation:
         if np.linalg.norm(pos1 - pos2) < 0.7:
           d1.set_facecolor('red')
           d2.set_facecolor('red')
-          print("COLLISION! (agent-agent)")
+          print("COLLISION! (agent-agent) ({}, {})".format(i, j))
 
-    return self.patches
+    return self.patches + self.artists
 
 
   def getState(self, t, d):
