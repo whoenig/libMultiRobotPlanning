@@ -23,13 +23,28 @@ The following algorithms are currently supported:
 
 ## Building
 
-Tested on Ubuntu 16.04.
+Tested on Ubuntu 16.04 and Ubuntu 18.04. To install the necessary packages, run:
+
+```
+InstallPackagesUbuntu
+```
+
+To build in `Debug` mode (debug optimizations enabled):
 
 ```
 mkdir build
 cd build
 cmake ..
-make
+make -j`nproc`
+```
+
+To build in `Release` mode (full optimizations enabled):
+
+```
+mkdir release
+cd release
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j`nproc`
 ```
 
 ### Targets

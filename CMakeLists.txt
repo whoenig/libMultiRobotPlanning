@@ -34,30 +34,9 @@ add_custom_target(clang-tidy
 
 # clang-format
 set(ALL_SOURCE_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/a_star_epsilon.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/assignment.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/cbs_ta.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/ecbs.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/ecbs_ta.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/neighbor.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/next_best_assignment.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/planresult.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/sipp.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/a_star_epsilon.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/assignment.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/cbs_ta.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/ecbs_ta.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/mapf_prioritized_sipp.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/next_best_assignment.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/shortest_path_heuristic.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/sipp.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/example/timer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/libMultiRobotPlanning/*.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/example/*.hpp
 )
 
 add_custom_target(clang-format
@@ -73,11 +52,25 @@ add_custom_target(everything
   DEPENDS clang-format clang-tidy docs run-test
 )
 
-# Enable C++14 and warnings
+message(STATUS "Build mode: " ${CMAKE_BUILD_TYPE})
+message(STATUS "C++ Compiler: " ${CMAKE_CXX_COMPILER})
+message(STATUS "C Compiler: " ${CMAKE_C_COMPILER})
+
+# Enable C++14, warnings, and flags for Debug and Release
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
+
+if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+  message(STATUS "Setting Additional Flags for Release mode")
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O3")
+else()
+  message(STATUS "Setting Additional Flags for Debug mode")
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Og")
+endif()
+
+message(STATUS "Full Flags: " ${CMAKE_CXX_FLAGS})
 
 include_directories(
   include
