@@ -27,10 +27,11 @@ addons:
   apt:
     packages:
       - libboost-program-options-dev
+      - libyaml-cpp-dev
 
 # additional mac dependencies
-# before_install:
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install libusb; fi
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yaml-cpp; fi
 
 script: make
