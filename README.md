@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/whoenig/libMultiRobotPlanning.svg?branch=master)](https://travis-ci.org/whoenig/libMultiRobotPlanning)
+
 # libMultiRobotPlanning
 
 libMultiRobotPlanning is a library with search algorithms primarily for task and path planning for multi robot/agent systems.
