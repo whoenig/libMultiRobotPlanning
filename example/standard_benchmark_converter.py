@@ -43,7 +43,7 @@ def load_map_file(map_file, occupied_char={'@', 'T', 'O'}, valid_chars={'@', '.'
         assert(len(l) == width)
         for x, c in enumerate(l):
             assert(c in valid_chars)
-            if c == occupied_char:
+            if c in occupied_char:
                 occupancy_lst.add((x, y))
     return width, height, occupancy_lst
 
