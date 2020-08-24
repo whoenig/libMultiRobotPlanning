@@ -188,18 +188,18 @@ struct Constraints {
                            other.edgeConstraints.end());
   }
 
-  bool overlap(const Constraints& other) {
-    std::vector<VertexConstraint> vertexIntersection;
-    std::vector<EdgeConstraint> edgeIntersection;
-    std::set_intersection(vertexConstraints.begin(), vertexConstraints.end(),
-                          other.vertexConstraints.begin(),
-                          other.vertexConstraints.end(),
-                          std::back_inserter(vertexIntersection));
-    std::set_intersection(edgeConstraints.begin(), edgeConstraints.end(),
-                          other.edgeConstraints.begin(),
-                          other.edgeConstraints.end(),
-                          std::back_inserter(edgeIntersection));
-    return !vertexIntersection.empty() || !edgeIntersection.empty();
+  bool overlap(const Constraints& other) const {
+    for (const auto& vc : vertexConstraints) {
+      if (other.vertexConstraints.count(vc) > 0) {
+        return true;
+      }
+    }
+    for (const auto& ec : edgeConstraints) {
+      if (other.edgeConstraints.count(ec) > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Constraints& c) {
