@@ -5,12 +5,13 @@ import os
 
 class TestCBS(unittest.TestCase):
 
-  def runCBS(self, inputFile, createVideo=False):
+  def runCBS(self, inputFile, createVideo=False, timeout=None):
     subprocess.run(
       ["./cbs",
        "-i", inputFile,
        "-o", "output.yaml"],
-       check=True)
+       check=True,
+       timeout=timeout)
     if createVideo:
       subprocess.run(
         ["python3", "../example/visualize.py",
@@ -33,6 +34,10 @@ class TestCBS(unittest.TestCase):
     r = self.runCBS("../test/mapf_atGoal.yaml")
     self.assertTrue(r["statistics"]["cost"] == 0)
 
+  def test_someAtGoal(self):
+    # This case is impossible, since two agents have the same goal location
+    # Our implementation doesn't check that; hence a timeout is expected.
+    self.assertRaises(subprocess.TimeoutExpired, self.runCBS, "../test/mapf_someAtGoal.yaml", timeout=0.5)
 
 if __name__ == '__main__':
     unittest.main()

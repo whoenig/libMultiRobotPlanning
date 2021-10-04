@@ -5,13 +5,14 @@ import os
 
 class TestECBS(unittest.TestCase):
 
-  def runECBS(self, inputFile, w, createVideo=False):
+  def runECBS(self, inputFile, w, createVideo=False, timeout=None):
     subprocess.run(
       ["./ecbs",
        "-i", inputFile,
        "-o", "output.yaml",
        "-w", str(w)],
-       check=True)
+       check=True,
+       timeout=timeout)
     if createVideo:
       subprocess.run(
         ["python3", "../example/visualize.py",
@@ -34,6 +35,10 @@ class TestECBS(unittest.TestCase):
     r = self.runECBS("../test/mapf_atGoal.yaml", 1.0)
     self.assertTrue(r["statistics"]["cost"] == 0)
 
+  def test_someAtGoal(self):
+    # This case is impossible, since two agents have the same goal location
+    # Our implementation doesn't check that; hence a timeout is expected.
+    self.assertRaises(subprocess.TimeoutExpired, self.runECBS, "../test/mapf_someAtGoal.yaml", 1.0, timeout=0.5)
 
 if __name__ == '__main__':
     unittest.main()
