@@ -247,7 +247,7 @@ struct hash<Location> {
 class Environment {
  public:
   Environment(size_t dimx, size_t dimy, std::unordered_set<Location> obstacles,
-              std::vector<Location> goals)
+              std::vector<Location> goals, bool disappearAtGoal = false)
       : m_dimx(dimx),
         m_dimy(dimy),
         m_obstacles(std::move(obstacles)),
@@ -256,8 +256,9 @@ class Environment {
         m_constraints(nullptr),
         m_lastGoalConstraint(-1),
         m_highLevelExpanded(0),
-        m_lowLevelExpanded(0) {
-    // computeHeuristic();
+        m_lowLevelExpanded(0),
+        m_disappearAtGoal(disappearAtGoal)
+  {
   }
 
   Environment(const Environment&) = delete;
@@ -425,6 +426,12 @@ class Environment {
       return solution[agentIdx].states[t].first;
     }
     assert(!solution[agentIdx].states.empty());
+    if (m_disappearAtGoal) {
+      // This is a trick to avoid changing the rest of the code significantly
+      // After an agent disappeared, put it at a unique but invalid position
+      // This will cause all calls to equalExceptTime(.) to return false.
+      return State(-1 * agentIdx, -1, -1);
+    }
     return solution[agentIdx].states.back().first;
   }
 
@@ -566,6 +573,7 @@ class Environment {
   int m_lastGoalConstraint;
   int m_highLevelExpanded;
   int m_lowLevelExpanded;
+  bool m_disappearAtGoal;
 };
 
 int main(int argc, char* argv[]) {
@@ -574,11 +582,13 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Allowed options");
   std::string inputFile;
   std::string outputFile;
+  bool disappearAtGoal;
   desc.add_options()("help", "produce help message")(
       "input,i", po::value<std::string>(&inputFile)->required(),
       "input file (YAML)")("output,o",
                            po::value<std::string>(&outputFile)->required(),
-                           "output file (YAML)");
+                           "output file (YAML)")(
+      "disappear-at-goal", po::bool_switch(&disappearAtGoal), "make agents to disappear at goal rather than staying there");
 
   try {
     po::variables_map vm;
@@ -617,7 +627,7 @@ int main(int argc, char* argv[]) {
     goals.emplace_back(Location(goal[0].as<int>(), goal[1].as<int>()));
   }
 
-  Environment mapf(dimx, dimy, obstacles, goals);
+  Environment mapf(dimx, dimy, obstacles, goals, disappearAtGoal);
   CBS<State, Action, int, Conflict, Constraints, Environment> cbs(mapf);
   std::vector<PlanResult<State, Action, int> > solution;
 

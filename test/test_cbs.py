@@ -5,11 +5,11 @@ import os
 
 class TestCBS(unittest.TestCase):
 
-  def runCBS(self, inputFile, createVideo=False, timeout=None):
+  def runCBS(self, inputFile, createVideo=False, timeout=None, additionalArgs=[]):
     subprocess.run(
       ["./cbs",
        "-i", inputFile,
-       "-o", "output.yaml"],
+       "-o", "output.yaml"] + additionalArgs,
        check=True,
        timeout=timeout)
     if createVideo:
@@ -38,6 +38,10 @@ class TestCBS(unittest.TestCase):
     # This case is impossible, since two agents have the same goal location
     # Our implementation doesn't check that; hence a timeout is expected.
     self.assertRaises(subprocess.TimeoutExpired, self.runCBS, "../test/mapf_someAtGoal.yaml", timeout=0.5)
+
+  def test_someAtGoal_disappearingAgents(self):
+    r = self.runCBS("../test/mapf_someAtGoal.yaml", additionalArgs=["--disappear-at-goal"])
+    self.assertTrue(r["statistics"]["cost"] == 1)
 
 if __name__ == '__main__':
     unittest.main()

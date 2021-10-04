@@ -247,7 +247,7 @@ struct hash<Location> {
 class Environment {
  public:
   Environment(size_t dimx, size_t dimy, std::unordered_set<Location> obstacles,
-              std::vector<Location> goals)
+              std::vector<Location> goals, bool disappearAtGoal = false)
       : m_dimx(dimx),
         m_dimy(dimy),
         m_obstacles(std::move(obstacles)),
@@ -256,13 +256,16 @@ class Environment {
         m_constraints(nullptr),
         m_lastGoalConstraint(-1),
         m_highLevelExpanded(0),
-        m_lowLevelExpanded(0) {}
+        m_lowLevelExpanded(0),
+        m_disappearAtGoal(disappearAtGoal)
+  {
+  }
 
   Environment(const Environment&) = delete;
   Environment& operator=(const Environment&) = delete;
 
   void setLowLevelContext(size_t agentIdx, const Constraints* constraints) {
-    assert(constraints);
+    assert(constraints);  // NOLINT
     m_agentIdx = agentIdx;
     m_constraints = constraints;
     m_lastGoalConstraint = -1;
@@ -491,6 +494,12 @@ class Environment {
       return solution[agentIdx].states[t].first;
     }
     assert(!solution[agentIdx].states.empty());
+    if (m_disappearAtGoal) {
+      // This is a trick to avoid changing the rest of the code significantly
+      // After an agent disappeared, put it at a unique but invalid position
+      // This will cause all calls to equalExceptTime(.) to return false.
+      return State(-1 * agentIdx, -1, -1);
+    }
     return solution[agentIdx].states.back().first;
   }
 
@@ -519,6 +528,7 @@ class Environment {
   int m_lastGoalConstraint;
   int m_highLevelExpanded;
   int m_lowLevelExpanded;
+  bool m_disappearAtGoal;
 };
 
 int main(int argc, char* argv[]) {
@@ -527,6 +537,7 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Allowed options");
   std::string inputFile;
   std::string outputFile;
+  bool disappearAtGoal;
   float w;
   desc.add_options()("help", "produce help message")(
       "input,i", po::value<std::string>(&inputFile)->required(),
@@ -534,7 +545,8 @@ int main(int argc, char* argv[]) {
                            po::value<std::string>(&outputFile)->required(),
                            "output file (YAML)")(
       "suboptimality,w", po::value<float>(&w)->default_value(1.0),
-      "suboptimality bound");
+      "suboptimality bound")(
+      "disappear-at-goal", po::bool_switch(&disappearAtGoal), "make agents to disappear at goal rather than staying there");
 
   try {
     po::variables_map vm;
@@ -573,12 +585,12 @@ int main(int argc, char* argv[]) {
     goals.emplace_back(Location(goal[0].as<int>(), goal[1].as<int>()));
   }
 
-  Environment mapf(dimx, dimy, obstacles, goals);
-  ECBS<State, Action, int, Conflict, Constraints, Environment> cbs(mapf, w);
+  Environment mapf(dimx, dimy, obstacles, goals, disappearAtGoal);
+  ECBS<State, Action, int, Conflict, Constraints, Environment> ecbs(mapf, w);
   std::vector<PlanResult<State, Action, int> > solution;
 
   Timer timer;
-  bool success = cbs.search(startStates, solution);
+  bool success = ecbs.search(startStates, solution);
   timer.stop();
 
   if (success) {
