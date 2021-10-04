@@ -340,7 +340,7 @@ class Environment {
       max_t = std::max<int>(max_t, sol.states.size() - 1);
     }
 
-    for (int t = 0; t < max_t; ++t) {
+    for (int t = 0; t <= max_t; ++t) {
       // check drive-drive vertex collisions
       for (size_t i = 0; i < solution.size(); ++i) {
         State state1 = getState(i, solution, t);
