@@ -20,7 +20,7 @@ class TestCBS(unittest.TestCase):
          "--video", os.path.splitext(os.path.basename(inputFile))[0] + "_cbs.mp4"],
         check=True)
     with open("output.yaml") as output_file:
-      return yaml.load(output_file)
+      return yaml.safe_load(output_file)
 
   def test_mapfSimple1(self):
     r = self.runCBS("../test/mapf_simple1.yaml")

@@ -160,10 +160,10 @@ if __name__ == "__main__":
 
 
   with open(args.map) as map_file:
-    map = yaml.load(map_file)
+    map = yaml.safe_load(map_file)
 
   with open(args.schedule) as states_file:
-    schedule = yaml.load(states_file)
+    schedule = yaml.safe_load(states_file)
 
   animation = Animation(map, schedule)
 

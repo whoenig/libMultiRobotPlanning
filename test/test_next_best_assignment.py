@@ -14,7 +14,7 @@ class TestNextBestAssignment(unittest.TestCase):
        "-o", "output.yaml"],
        check=True)
     with open("output.yaml") as output_file:
-      return yaml.load(output_file)
+      return yaml.safe_load(output_file)
 
   def test_empty(self):
     mapping = dict()

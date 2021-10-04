@@ -15,7 +15,7 @@ class TestAstar(unittest.TestCase):
        "-o", "output.yaml"],
        check=True)
     with open("output.yaml") as output_file:
-      return yaml.load(output_file)
+      return yaml.safe_load(output_file)
 
   def test_startAndGoalIdentical(self):
     r = self.runAstar([0, 0], [0, 0], "../test/map_3x3.txt")
