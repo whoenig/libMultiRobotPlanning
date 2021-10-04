@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/whoenig/libMultiRobotPlanning.svg?branch=master)](https://travis-ci.org/whoenig/libMultiRobotPlanning)
+[![Build](https://github.com/whoenig/libMultiRobotPlanning/actions/workflows/build.yml/badge.svg)](https://github.com/whoenig/libMultiRobotPlanning/actions/workflows/build.yml)
 
 # libMultiRobotPlanning
 
