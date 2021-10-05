@@ -1,0 +1,20 @@
+roadmap:
+  undirected: True
+  edges:
+    - [A, B]
+    - [B, C]
+    - [C, D]
+    - [D, A]
+agents:
+  - name: agent0
+    start: A
+    goal: B
+  - name: agent1
+    start: B
+    goal: C
+  - name: agent2
+    start: C
+    goal: D
+  - name: agent3
+    start: D
+    goal: A

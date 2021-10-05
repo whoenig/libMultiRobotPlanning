@@ -112,6 +112,15 @@ target_link_libraries(assignment
   ${Boost_LIBRARIES}
 )
 
+## cbs_roadmap
+add_executable(cbs_roadmap
+  example/cbs_roadmap.cpp
+)
+target_link_libraries(cbs_roadmap
+  ${Boost_LIBRARIES}
+  yaml-cpp
+)
+
 ## cbs
 add_executable(cbs
   example/cbs.cpp
