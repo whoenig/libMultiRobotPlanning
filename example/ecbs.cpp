@@ -498,7 +498,7 @@ class Environment {
       // This is a trick to avoid changing the rest of the code significantly
       // After an agent disappeared, put it at a unique but invalid position
       // This will cause all calls to equalExceptTime(.) to return false.
-      return State(-1 * agentIdx, -1, -1);
+      return State(-1, -1 * (agentIdx+1), -1);
     }
     return solution[agentIdx].states.back().first;
   }

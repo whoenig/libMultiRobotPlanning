@@ -45,5 +45,9 @@ class TestECBS(unittest.TestCase):
     r = self.runECBS("../test/mapf_someAtGoal.yaml", 1.0, additionalArgs=["--disappear-at-goal"])
     self.assertTrue(r["statistics"]["cost"] == 1)
 
+  def test_issue28_disappearingAgents(self):
+    r = self.runECBS("../test/issue28.yaml", 1.0, additionalArgs=["--disappear-at-goal"])
+    self.assertTrue(r["statistics"]["cost"] == 8)
+
 if __name__ == '__main__':
     unittest.main()
