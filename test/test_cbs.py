@@ -43,5 +43,9 @@ class TestCBS(unittest.TestCase):
     r = self.runCBS("../test/mapf_someAtGoal.yaml", additionalArgs=["--disappear-at-goal"])
     self.assertTrue(r["statistics"]["cost"] == 1)
 
+  def test_issue28_disappearingAgents(self):
+    r = self.runCBS("../test/issue28.yaml", additionalArgs=["--disappear-at-goal"])
+    self.assertTrue(r["statistics"]["cost"] == 8)
+
 if __name__ == '__main__':
     unittest.main()
