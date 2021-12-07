@@ -49,5 +49,9 @@ class TestECBS(unittest.TestCase):
     r = self.runECBS("../test/issue28.yaml", 1.0, additionalArgs=["--disappear-at-goal"])
     self.assertTrue(r["statistics"]["cost"] == 8)
 
+  def test_issue30(self):
+    r = self.runECBS("../test/issue30.yaml", 1.5)
+    # no need to check anything other than successful process termination
+
 if __name__ == '__main__':
     unittest.main()

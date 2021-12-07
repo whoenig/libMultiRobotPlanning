@@ -585,6 +585,16 @@ int main(int argc, char* argv[]) {
     goals.emplace_back(Location(goal[0].as<int>(), goal[1].as<int>()));
   }
 
+  // sanity check: no identical start states
+  std::unordered_set<State> startStatesSet;
+  for (const auto& s : startStates) {
+    if (startStatesSet.find(s) != startStatesSet.end()) {
+      std::cout << "Identical start states detected -> no solution!" << std::endl;
+      return 0;
+    }
+    startStatesSet.insert(s);
+  }
+
   Environment mapf(dimx, dimy, obstacles, goals, disappearAtGoal);
   ECBS<State, Action, int, Conflict, Constraints, Environment> ecbs(mapf, w);
   std::vector<PlanResult<State, Action, int> > solution;

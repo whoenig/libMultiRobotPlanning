@@ -567,6 +567,16 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // sanity check: no identical start states
+  std::unordered_set<State> startStatesSet;
+  for (const auto& s : startStates) {
+    if (startStatesSet.find(s) != startStatesSet.end()) {
+      std::cout << "Identical start states detected -> no solution!" << std::endl;
+      return 0;
+    }
+    startStatesSet.insert(s);
+  }
+
   Environment mapf(dimx, dimy, obstacles, startStates, goals,
                    maxTaskAssignments);
   CBSTA<State, Action, int, Conflict, Constraints, Location, Environment>
