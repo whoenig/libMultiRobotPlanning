@@ -1,0 +1,23 @@
+roadmap:
+  undirected: True
+  allow_wait_actions: True
+  vertices:
+    A: [0, 0]
+    B: [1, 0]
+    C: [2, 0]
+    D: [3, 0]
+    E: [4, 0]
+    F: [2, 1]
+  edges:
+    - [A, B]
+    - [B, C]
+    - [C, D]
+    - [D, E]
+    - [C, F]
+agents:
+  - name: agent0
+    start: A
+    goal: E
+  - name: agent1
+    start: B
+    goal: D
