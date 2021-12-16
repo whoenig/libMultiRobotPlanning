@@ -265,14 +265,14 @@ class Environment {
       }
     }
 
-    // Wait action
-    {
-      State n(s.time + 1, s.vertex);
-      if (stateValid(n)) {
-        neighbors.emplace_back(
-            Neighbor<State, Action, int>(n, edge_t(), 1));
-      }
-    }
+    // // Wait action
+    // {
+    //   State n(s.time + 1, s.vertex);
+    //   if (stateValid(n)) {
+    //     neighbors.emplace_back(
+    //         Neighbor<State, Action, int>(n, edge_t(), 1));
+    //   }
+    // }
   }
 
   bool getFirstConflict(
@@ -476,6 +476,13 @@ int main(int argc, char* argv[]) {
       edgeVec.push_back(e2.first);
       roadmap[e1.first].conflictingEdges.insert(e2.first);
       roadmap[e2.first].conflictingEdges.insert(e1.first);
+    }
+  }
+
+  if (config["roadmap"]["allow_wait_actions"].as<bool>()) {
+    for (const auto& v : vertexMap) {
+      auto e = boost::add_edge(v.second, v.second, roadmap);
+      edgeVec.push_back(e.first);
     }
   }
 

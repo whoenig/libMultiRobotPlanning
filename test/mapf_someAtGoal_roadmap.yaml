@@ -1,5 +1,6 @@
 roadmap:
   undirected: True
+  allow_wait_actions: True
   edges:
     - [A, B]
     - [B, C]
