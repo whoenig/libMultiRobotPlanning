@@ -15,9 +15,10 @@ Colors = ['orange', 'blue', 'green']
 
 
 class Animation:
-  def __init__(self, map, schedule):
+  def __init__(self, map, schedule, radius):
     self.map = map
     self.schedule = schedule
+    self.radius = radius
 
     # find boundary
     all_pos = np.array(list(map["roadmap"]["vertices"].values()))
@@ -38,8 +39,8 @@ class Animation:
     self.agents = dict()
     self.agent_names = dict()
 
-    plt.xlim(xmin - 0.5, xmax + 0.5)
-    plt.ylim(ymin - 0.5, ymax + 0.5)
+    plt.xlim(xmin - radius, xmax + radius)
+    plt.ylim(ymin - radius, ymax + radius)
 
     v_dict = map["roadmap"]["vertices"]
     for edge in map["roadmap"]["edges"]:
@@ -57,12 +58,12 @@ class Animation:
         goals = [goal for goal in d["potentialGoals"]]
       for goal in goals:
         v = v_dict[goal]
-        self.patches.append(Rectangle((v[0] - 0.25, v[1] - 0.25), 0.5, 0.5, facecolor=Colors[i%len(Colors)], edgecolor='black', alpha=0.5))
+        self.patches.append(Rectangle((v[0] - radius, v[1] - radius), 2*radius, 2*radius, facecolor=Colors[i%len(Colors)], edgecolor='black', alpha=0.5))
 
     for d, i in zip(map["agents"], range(0, len(map["agents"]))):
       name = d["name"]
       v = v_dict[d["start"]]
-      self.agents[name] = Circle((v[0], v[1]), 0.3, facecolor=Colors[i%len(Colors)], edgecolor='black')
+      self.agents[name] = Circle((v[0], v[1]), radius, facecolor=Colors[i%len(Colors)], edgecolor='black')
       self.agents[name].original_face_color = Colors[i%len(Colors)]
       self.patches.append(self.agents[name])
       self.T = max(self.T, schedule["schedule"][name][-1]["t"])
@@ -115,7 +116,7 @@ class Animation:
         d2 = agents_array[j]
         pos1 = np.array(d1.center)
         pos2 = np.array(d2.center)
-        if np.linalg.norm(pos1 - pos2) < 0.7:
+        if np.linalg.norm(pos1 - pos2) < 2 * self.radius:
           d1.set_facecolor('red')
           d2.set_facecolor('red')
           print("COLLISION! (agent-agent) ({}, {})".format(i, j))
@@ -146,6 +147,7 @@ def main():
   parser.add_argument("schedule", help="schedule for agents")
   parser.add_argument('--video', dest='video', default=None, help="output video file (or leave empty to show on screen)")
   parser.add_argument("--speed", type=int, default=1, help="speedup-factor")
+  parser.add_argument("--radius", type=float, default=0.3, help="radius of robot")
   args = parser.parse_args()
 
   with open(args.map) as map_file:
@@ -158,7 +160,7 @@ def main():
   with open(args.schedule) as states_file:
     schedule = yaml.safe_load(states_file)
 
-  animation = Animation(map, schedule)
+  animation = Animation(map, schedule, args.radius)
 
   if args.video:
     animation.save(args.video, args.speed)
