@@ -220,6 +220,12 @@ class Environment {
         m_lowLevelExpanded(0),
         m_disappearAtGoal(disappearAtGoal)
   {
+    auto V = boost::num_vertices(m_roadmap);
+    // Upper bound on the makespan, see
+    // Jingjin Yu, Daniela Rus:
+    // Pebble Motion on Graphs with Rotations: Efficient Feasibility Tests and Planning Algorithms. WAFR 2014: 729-746
+    // NOTE: that the constant factor is not known
+    m_timeLimit = pow(V, 3);
   }
 
   Environment(const Environment&) = delete;
@@ -255,6 +261,11 @@ class Environment {
     //   std::endl;
     // }
     neighbors.clear();
+
+    if (s.time > m_timeLimit) {
+      return;
+    }
+
     auto es = boost::out_edges(s.vertex, m_roadmap);
     for (auto eit = es.first; eit != es.second; ++eit) {
       vertex_t v = boost::target(*eit, m_roadmap);
@@ -395,6 +406,7 @@ private:
   int m_highLevelExpanded;
   int m_lowLevelExpanded;
   bool m_disappearAtGoal;
+  int m_timeLimit;
 };
 
 int main(int argc, char* argv[]) {
@@ -527,6 +539,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out(outputFile);
     out << "statistics:" << std::endl;
+    out << "  success: " << true << std::endl;
     out << "  cost: " << cost << std::endl;
     out << "  makespan: " << makespan << std::endl;
     out << "  runtime: " << timer.elapsedSeconds() << std::endl;
@@ -551,6 +564,9 @@ int main(int argc, char* argv[]) {
     }
   } else {
     std::cout << "Planning NOT successful!" << std::endl;
+    std::ofstream out(outputFile);
+    out << "statistics:" << std::endl;
+    out << "  success: " << false << std::endl;
   }
 
   return 0;

@@ -5,7 +5,15 @@ import os
 
 class TestCBS(unittest.TestCase):
 
-  def runCBS(self, inputFile, createVideo=False, timeout=None, additionalArgs=[]):
+  def runCBS(self, inputFile, createVideo=False, timeout=None, additionalArgs=[], annotate=False, annotate_radius=0.3):
+    if annotate:
+      subprocess.run(
+          ["python3", "../tools/annotate_roadmap.py",
+           inputFile,
+           "annotated_input.yaml",
+           str(annotate_radius)],
+          check=True)
+      inputFile = "annotated_input.yaml"
     subprocess.run(
       ["./cbs_roadmap",
        "-i", inputFile,
@@ -42,6 +50,11 @@ class TestCBS(unittest.TestCase):
   def test_someAtGoal_disappearingAgents(self):
     r = self.runCBS("../test/mapf_someAtGoal_roadmap.yaml", additionalArgs=["--disappear-at-goal"])
     self.assertTrue(r["statistics"]["cost"] == 1)
+
+  def test_issue33_no_solution(self):
+    r = self.runCBS("../test/issue33.yaml", annotate=True, annotate_radius=0.2)
+    self.assertFalse(r["statistics"]["success"])
+
 
 if __name__ == '__main__':
     unittest.main()
