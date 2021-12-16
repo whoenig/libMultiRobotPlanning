@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 import argparse
-import yaml
-import collision
+
 import numpy as np
+import yaml
+
+import collision
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("map", help="input file containing roadmap")
     parser.add_argument("out", help="output file containing annotated roadmap")
+    parser.add_argument("radius", help="radius of robot",
+                        type=float, default=0.3, nargs="?")
     args = parser.parse_args()
+    print(args)
 
     with open(args.map) as map_file:
         map = yaml.safe_load(map_file)
@@ -30,8 +36,7 @@ def main():
         map["roadmap"]["allow_wait_actions"] = False
 
     # compute the pairwise collisions
-    radius = 0.3
-    E = np.diag([radius, radius])
+    E = np.diag([args.radius, args.radius])
     num_edges = len(map["roadmap"]["edges"])
     v_dict = map["roadmap"]["vertices"]
     edges = map["roadmap"]["edges"]
@@ -46,13 +51,14 @@ def main():
             if collides:
                 conflicts[i].append(j)
                 conflicts[j].append(i)
-                print(edges[i],edges[j])
+                print(edges[i], edges[j])
 
     print(conflicts)
     map["roadmap"]["conflicts"] = conflicts
 
     with open(args.out, 'w') as f:
         yaml.dump(map, f)
+
 
 if __name__ == "__main__":
     main()
