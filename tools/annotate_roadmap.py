@@ -17,26 +17,45 @@ def main():
     print(args)
 
     with open(args.map) as map_file:
-        map = yaml.safe_load(map_file)
+        roadmap = yaml.safe_load(map_file)
 
-    if "roadmap" not in map:
+    if "roadmap" not in roadmap:
         print("Not a roadmap file!")
         exit()
 
+    roadmap = add_self_edges(roadmap)
+    roadmap = add_edge_conflicts(args.radius, roadmap)
+
+    with open(args.out, 'w') as f:
+        yaml.dump(roadmap, f)
+
+
+def add_edge_conflicts(radius, roadmap):
+    conflicts = compute_edge_conflicts(radius, roadmap)
+    roadmap["roadmap"]["conflicts"] = conflicts
+    return roadmap
+
+
+def add_self_edges(roadmap):
     # if undirected, convert to a directed version
-    if map["roadmap"]["undirected"]:
-        new_edges = [[goal, start] for start, goal in map["roadmap"]["edges"]]
-        map["roadmap"]["edges"].extend(new_edges)
-        map["roadmap"]["undirected"] = False
+    if roadmap["roadmap"]["undirected"]:
+        new_edges = [[goal, start]
+                     for start, goal in roadmap["roadmap"]["edges"]]
+        roadmap["roadmap"]["edges"].extend(new_edges)
+        roadmap["roadmap"]["undirected"] = False
 
     # if wait actions are allowed, add self-edges
-    if map["roadmap"]["allow_wait_actions"]:
-        new_edges = [[v, v] for v in map["roadmap"]["vertices"]]
-        map["roadmap"]["edges"].extend(new_edges)
-        map["roadmap"]["allow_wait_actions"] = False
+    if roadmap["roadmap"]["allow_wait_actions"]:
+        new_edges = [[v, v] for v in roadmap["roadmap"]["vertices"]]
+        roadmap["roadmap"]["edges"].extend(new_edges)
+        roadmap["roadmap"]["allow_wait_actions"] = False
 
-    # compute the pairwise collisions
-    E = np.diag([args.radius, args.radius])
+    return roadmap
+
+
+def compute_edge_conflicts(radius, map):
+    # compute the pairwise collisions and add them to the map
+    E = np.diag([radius, radius])
     num_edges = len(map["roadmap"]["edges"])
     v_dict = map["roadmap"]["vertices"]
     edges = map["roadmap"]["edges"]
@@ -51,13 +70,7 @@ def main():
             if collides:
                 conflicts[i].append(j)
                 conflicts[j].append(i)
-                print(edges[i], edges[j])
-
-    print(conflicts)
-    map["roadmap"]["conflicts"] = conflicts
-
-    with open(args.out, 'w') as f:
-        yaml.dump(map, f)
+    return conflicts
 
 
 if __name__ == "__main__":

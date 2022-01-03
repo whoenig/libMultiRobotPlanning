@@ -23,8 +23,9 @@ def ellipsoid_collision_swept(E, p0, p1, q0, q1):
     # let second line segment be q0+beta*(q1-q0), where beta in [0,1]
     beta = cp.Variable()
 
-    objective = cp.Minimize(cp.norm2(E_inverse @ ((p0+alpha*(p1-p0) - (q0+beta*(q1-q0))))))
-    constraints = [0 <= alpha, alpha <=1, 0 <= beta, beta <= 1]
+    objective = cp.Minimize(
+        cp.norm2(E_inverse @ ((p0+alpha*(p1-p0) - (q0+beta*(q1-q0))))))
+    constraints = [0 <= alpha, alpha <= 1, 0 <= beta, beta <= 1]
     prob = cp.Problem(objective, constraints)
     result = prob.solve()
 
@@ -58,6 +59,7 @@ def ellipsoid_collision_motion(E, p0, p1, q0, q1):
 
     return result <= 2
 
+
 def main():
     E = np.diag([0.15, 0.15, 0.3])
     p0 = np.array([-3.5, -1, 2])
@@ -68,6 +70,7 @@ def main():
     collides_swept = ellipsoid_collision_swept(E, p0, p1, q0, q1)
     collides_motion = ellipsoid_collision_motion(E, p0, p1, q0, q1)
     print(collides_swept, collides_motion)
+
 
 if __name__ == "__main__":
     main()
