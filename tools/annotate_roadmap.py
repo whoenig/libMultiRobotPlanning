@@ -4,7 +4,8 @@ import argparse
 import numpy as np
 import yaml
 
-from .collision import ellipsoid_collision_motion, precheck_bounding_box
+if __name__ != "__main__":
+    from . import collision
 
 
 def main():
@@ -66,8 +67,9 @@ def compute_edge_conflicts(radius, map):
         for j in range(i+1, num_edges):
             q0 = np.asarray(v_dict[edges[j][0]])
             q1 = np.asarray(v_dict[edges[j][1]])
-            if precheck_bounding_box(E, p0, p1, q0, q1):
-                collides = ellipsoid_collision_motion(E, p0, p1, q0, q1)
+            if collision.precheck_bounding_box(E, p0, p1, q0, q1):
+                collides = collision.ellipsoid_collision_motion(
+                    E, p0, p1, q0, q1)
             else:
                 collides = False
             if collides:
@@ -77,4 +79,5 @@ def compute_edge_conflicts(radius, map):
 
 
 if __name__ == "__main__":
+    import collision
     main()
