@@ -79,10 +79,15 @@ def compute_edge_conflicts(radius, map):
         p0 = np.asarray(v_dict[edges[i][0]])
         p1 = np.asarray(v_dict[edges[i][1]])
         for j in range(i+1, num_edges):
-            q0 = np.asarray(v_dict[edges[j][0]])
-            q1 = np.asarray(v_dict[edges[j][1]])
-            if collision.precheck_bounding_box(E, p0, p1, q0, q1):
-                edges_to_check.append((i, j, E, p0, p1, q0, q1))
+            if collision.precheck_indices(edges[i], edges[j]):
+                # trivial case
+                conflicts[i].append(j)
+                conflicts[j].append(i)
+            else:
+                q0 = np.asarray(v_dict[edges[j][0]])
+                q1 = np.asarray(v_dict[edges[j][1]])
+                if collision.precheck_bounding_box(E, p0, p1, q0, q1):
+                    edges_to_check.append((i, j, E, p0, p1, q0, q1))
 
     # check all edges in parallel
 

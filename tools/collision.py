@@ -3,6 +3,16 @@ import cvxpy as cp
 import numpy as np
 
 
+def precheck_indices(edge_a, edge_b):
+    """Check if indices of edges are already indicating a conflict.
+    Returns True iff in collision."""
+    return (
+        edge_a[0] == edge_b[0] or  # same start
+        edge_a[1] == edge_b[1] or  # same end
+        (edge_a[0] == edge_b[1] and edge_a[1] == edge_b[0])  # reverse edge
+    )
+
+
 def precheck_bounding_box(E, p0, p1, q0, q1):
     """Check if the bounding boxes spanning the two line segments overlap.
     Returns True if the bounding boxes overlap, False otherwise."""
