@@ -42,6 +42,7 @@ struct Vertex {
 
 struct Edge {
   std::unordered_set<edge_t> conflictingEdges;
+  int cost; // use mm here to keep it as an integer
 };
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
@@ -272,7 +273,7 @@ class Environment {
       State n(s.time + 1, v);
       if (stateValid(n) && transitionValid(s.time, *eit)) {
         neighbors.emplace_back(
-            Neighbor<State, Action, int>(n, *eit, 1));
+            Neighbor<State, Action, int>(n, *eit, m_roadmap[*eit].cost));
       }
     }
 
@@ -454,6 +455,29 @@ int main(int argc, char* argv[]) {
   }
 
   // read roadmap
+
+  // find shortest edge
+  int shortest_edge_cost = std::numeric_limits<int>::max();
+  for (const auto& edge : config["roadmap"]["edges"]) {
+    auto v1str = edge[0].as<std::string>();
+    auto v2str = edge[1].as<std::string>();
+    // compute Eucledian cost in mm
+    float x1 = config["roadmap"]["vertices"][v1str][0].as<float>();
+    float y1 = config["roadmap"]["vertices"][v1str][1].as<float>();
+    float x2 = config["roadmap"]["vertices"][v2str][0].as<float>();
+    float y2 = config["roadmap"]["vertices"][v2str][1].as<float>();
+    float dx = (x2 - x1);
+    float dy = (y2 - y1);
+    float dist = sqrtf(dx * dx + dy * dy);
+    int dist_in_mm = dist * 1000;
+    if (dist_in_mm != 0 and dist_in_mm < shortest_edge_cost) {
+      shortest_edge_cost = dist_in_mm;
+    }
+  }
+
+  const int self_loop_cost = shortest_edge_cost; // waiting is as costly as traversing the shortest edge in the graph
+  const int base_cost = 0; // no fixed cost per timestep
+
   roadmap_t roadmap;
   std::unordered_map<std::string, vertex_t> vertexMap;
 
@@ -481,10 +505,26 @@ int main(int argc, char* argv[]) {
       vertexMap.insert(std::make_pair(v2str, v2));
       roadmap[v2].name = v2str;
     }
+    // add the edge
     auto e1 = boost::add_edge(v1, v2, roadmap);
+    // compute Eucledian cost in mm
+    float x1 = config["roadmap"]["vertices"][v1str][0].as<float>();
+    float y1 = config["roadmap"]["vertices"][v1str][1].as<float>();
+    float x2 = config["roadmap"]["vertices"][v2str][0].as<float>();
+    float y2 = config["roadmap"]["vertices"][v2str][1].as<float>();
+    float dx = (x2 - x1);
+    float dy = (y2 - y1);
+    float dist = sqrtf(dx * dx + dy * dy);
+    int dist_in_mm = dist * 1000;
+    if (dist_in_mm == 0) {
+      dist_in_mm = self_loop_cost;
+    }
+
+    roadmap[e1.first].cost = dist_in_mm + base_cost;
     edgeVec.push_back(e1.first);
     if (config["roadmap"]["undirected"].as<bool>()) {
       auto e2 = boost::add_edge(v2, v1, roadmap);
+      roadmap[e2.first].cost = dist_in_mm + base_cost;
       edgeVec.push_back(e2.first);
       roadmap[e1.first].conflictingEdges.insert(e2.first);
       roadmap[e2.first].conflictingEdges.insert(e1.first);
@@ -494,6 +534,7 @@ int main(int argc, char* argv[]) {
   if (config["roadmap"]["allow_wait_actions"].as<bool>()) {
     for (const auto& v : vertexMap) {
       auto e = boost::add_edge(v.second, v.second, roadmap);
+      roadmap[e.first].cost = self_loop_cost + base_cost;
       edgeVec.push_back(e.first);
     }
   }
@@ -559,7 +600,7 @@ int main(int argc, char* argv[]) {
       out << "  agent" << a << ":" << std::endl;
       for (const auto& state : solution[a].states) {
         out << "    - v: " << roadmap[state.first.vertex].name << std::endl
-            << "      t: " << state.second << std::endl;
+            << "      cost: " << state.second << std::endl;
       }
     }
   } else {
