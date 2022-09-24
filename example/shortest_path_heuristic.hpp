@@ -13,7 +13,7 @@ class ShortestPathHeuristic {
                         const std::unordered_set<Location>& obstacles)
       : m_shortestDistance(nullptr), m_dimx(dimx), m_dimy(dimy) {
     searchGraph_t searchGraph;
-
+   
     // add vertices
     for (size_t x = 0; x < dimx; ++x) {
       for (size_t y = 0; y < dimy; ++y) {
@@ -21,19 +21,28 @@ class ShortestPathHeuristic {
       }
     }
 
+    const int& DIMX = dimx;
+    const int& DIMY = dimy;
+    bool tmp_obstcles[DIMX][DIMY];
+    memset(tmp_obstcles, 0, sizeof(tmp_obstcles));
+    for (auto obstacle:obstacles)
+      tmp_obstcles[obstacle.x][obstacle.y] = true;
+       
+       
+       
     // add edges
     for (size_t x = 0; x < dimx; ++x) {
       for (size_t y = 0; y < dimy; ++y) {
         Location l(x, y);
-        if (obstacles.find(l) == obstacles.end()) {
+        if (!tmp_obstcles[x][y]) {
           Location right(x + 1, y);
-          if (x < dimx - 1 && obstacles.find(right) == obstacles.end()) {
+          if (x < dimx - 1 && !tmp_obstcles[x+1][y]) {
             auto e =
                 boost::add_edge(locToVert(l), locToVert(right), searchGraph);
             searchGraph[e.first].weight = 1;
           }
           Location below(x, y + 1);
-          if (y < dimy - 1 && obstacles.find(below) == obstacles.end()) {
+          if (y < dimy - 1 && !tmp_obstcles[x][y+1]) {
             auto e =
                 boost::add_edge(locToVert(l), locToVert(below), searchGraph);
             searchGraph[e.first].weight = 1;
