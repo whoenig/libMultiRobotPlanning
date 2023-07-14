@@ -1,0 +1,14 @@
+roadmap:
+  undirected: True
+  allow_wait_actions: True
+  edges:
+    - [A, B]
+    - [B, C]
+    - [C, D]
+agents:
+  - name: agent0
+    start: A
+    goal: C
+  - name: agent1
+    start: D
+    goal: B
