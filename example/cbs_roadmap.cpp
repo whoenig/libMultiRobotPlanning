@@ -220,6 +220,12 @@ class Environment {
         m_lowLevelExpanded(0),
         m_disappearAtGoal(disappearAtGoal)
   {
+    auto V = boost::num_vertices(m_roadmap);
+    // Upper bound on the makespan, see
+    // Jingjin Yu, Daniela Rus:
+    // Pebble Motion on Graphs with Rotations: Efficient Feasibility Tests and Planning Algorithms. WAFR 2014: 729-746
+    // NOTE: that the constant factor is not known
+    m_timeLimit = pow(V, 3);
   }
 
   Environment(const Environment&) = delete;
@@ -255,6 +261,11 @@ class Environment {
     //   std::endl;
     // }
     neighbors.clear();
+
+    if (s.time > m_timeLimit) {
+      return;
+    }
+
     auto es = boost::out_edges(s.vertex, m_roadmap);
     for (auto eit = es.first; eit != es.second; ++eit) {
       vertex_t v = boost::target(*eit, m_roadmap);
@@ -265,14 +276,14 @@ class Environment {
       }
     }
 
-    // Wait action
-    {
-      State n(s.time + 1, s.vertex);
-      if (stateValid(n)) {
-        neighbors.emplace_back(
-            Neighbor<State, Action, int>(n, edge_t(), 1));
-      }
-    }
+    // // Wait action
+    // {
+    //   State n(s.time + 1, s.vertex);
+    //   if (stateValid(n)) {
+    //     neighbors.emplace_back(
+    //         Neighbor<State, Action, int>(n, edge_t(), 1));
+    //   }
+    // }
   }
 
   bool getFirstConflict(
@@ -299,7 +310,7 @@ class Environment {
           }
         }
       }
-      // edge/edge (swap)
+      // edge/edge
       for (size_t i = 0; i < solution.size(); ++i) {
         for (size_t j = i + 1; j < solution.size(); ++j) {
           if (t < solution[i].actions.size() &&
@@ -395,6 +406,7 @@ private:
   int m_highLevelExpanded;
   int m_lowLevelExpanded;
   bool m_disappearAtGoal;
+  int m_timeLimit;
 };
 
 int main(int argc, char* argv[]) {
@@ -428,10 +440,24 @@ int main(int argc, char* argv[]) {
 
   YAML::Node config = YAML::LoadFile(inputFile);
 
+  // some sanity checks
+  if (config["roadmap"]["conflicts"]) {
+    if (config["roadmap"]["undirected"].as<bool>()) {
+      throw std::runtime_error("If conflicts are specified, the roadmap cannot be undirected!");
+    }
+    if (config["roadmap"]["allow_wait_actions"].as<bool>()) {
+      throw std::runtime_error("If conflicts are specified, the wait actions must be already encoded in the edge set!");
+    }
+    if (config["roadmap"]["conflicts"].size() != config["roadmap"]["edges"].size()) {
+      throw std::runtime_error("If conflicts are specified, the cardinality of conflicts and edges must match!");
+    }
+  }
+
   // read roadmap
   roadmap_t roadmap;
   std::unordered_map<std::string, vertex_t> vertexMap;
 
+  std::vector<edge_t> edgeVec;
   for (const auto& edge : config["roadmap"]["edges"]) {
     // find or insert vertex1
     auto v1str = edge[0].as<std::string>();
@@ -456,10 +482,30 @@ int main(int argc, char* argv[]) {
       roadmap[v2].name = v2str;
     }
     auto e1 = boost::add_edge(v1, v2, roadmap);
-    if (config["roadmap"]["undirected"]) {
+    edgeVec.push_back(e1.first);
+    if (config["roadmap"]["undirected"].as<bool>()) {
       auto e2 = boost::add_edge(v2, v1, roadmap);
+      edgeVec.push_back(e2.first);
       roadmap[e1.first].conflictingEdges.insert(e2.first);
       roadmap[e2.first].conflictingEdges.insert(e1.first);
+    }
+  }
+
+  if (config["roadmap"]["allow_wait_actions"].as<bool>()) {
+    for (const auto& v : vertexMap) {
+      auto e = boost::add_edge(v.second, v.second, roadmap);
+      edgeVec.push_back(e.first);
+    }
+  }
+
+  if (config["roadmap"]["conflicts"]) {
+    size_t i = 0;
+    for (const auto& conflicts : config["roadmap"]["conflicts"]) {
+      for (const auto& conflict : conflicts) {
+        size_t j = conflict.as<size_t>();
+        roadmap[edgeVec[i]].conflictingEdges.insert(edgeVec[j]);
+      }
+      ++i;
     }
   }
 
@@ -493,6 +539,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out(outputFile);
     out << "statistics:" << std::endl;
+    out << "  success: " << true << std::endl;
     out << "  cost: " << cost << std::endl;
     out << "  makespan: " << makespan << std::endl;
     out << "  runtime: " << timer.elapsedSeconds() << std::endl;
@@ -517,6 +564,9 @@ int main(int argc, char* argv[]) {
     }
   } else {
     std::cout << "Planning NOT successful!" << std::endl;
+    std::ofstream out(outputFile);
+    out << "statistics:" << std::endl;
+    out << "  success: " << false << std::endl;
   }
 
   return 0;

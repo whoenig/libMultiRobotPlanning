@@ -5,12 +5,10 @@ roadmap:
     - [A, B]
     - [B, C]
     - [C, D]
-    - [D, E]
-    - [C, F]
 agents:
   - name: agent0
-    start: E
-    goal: E
+    start: A
+    goal: C
   - name: agent1
     start: D
-    goal: E
+    goal: B
