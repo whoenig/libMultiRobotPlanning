@@ -71,7 +71,7 @@ class NextBestAssignment {
     long result = next.cost;
 
     std::set<Agent> fixedAgents;
-    for (const auto c : next.I) {
+    for (const auto& c : next.I) {
       fixedAgents.insert(c.first);
     }
 
