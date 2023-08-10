@@ -10,9 +10,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include <libMultiRobotPlanning/cbs.hpp>
+#include <libMultiRobotPlanning/a_star.hpp>
 #include "timer.hpp"
 
 using libMultiRobotPlanning::CBS;
+using libMultiRobotPlanning::AStar;
 using libMultiRobotPlanning::Neighbor;
 using libMultiRobotPlanning::PlanResult;
 
@@ -409,6 +411,45 @@ private:
   int m_timeLimit;
 };
 
+///
+class LowLevelEnvironment {
+public:
+  LowLevelEnvironment(Environment& env, size_t agentIdx,
+                      const Constraints& constraints)
+      : m_env(env)
+  // , m_agentIdx(agentIdx)
+  // , m_constraints(constraints)
+  {
+    m_env.setLowLevelContext(agentIdx, &constraints);
+  }
+
+  int admissibleHeuristic(const State& s) {
+    return m_env.admissibleHeuristic(s);
+  }
+
+  bool isSolution(const State& s) { return m_env.isSolution(s); }
+
+  void getNeighbors(const State& s,
+                    std::vector<Neighbor<State, Action, int> >& neighbors) {
+    m_env.getNeighbors(s, neighbors);
+  }
+
+  void onExpandNode(const State& s, int fScore, int gScore) {
+    // std::cout << "LL expand: " << s << std::endl;
+    m_env.onExpandLowLevelNode(s, fScore, gScore);
+  }
+
+  void onDiscover(const State& /*s*/, int /*fScore*/, int /*gScore*/) {
+    // std::cout << "LL discover: " << s << std::endl;
+    // m_env.onDiscoverLowLevel(s, m_agentIdx, m_constraints);
+  }
+
+private:
+  Environment& m_env;
+  // size_t m_agentIdx;
+  // const Constraints& m_constraints;
+};
+
 int main(int argc, char* argv[]) {
   namespace po = boost::program_options;
   // Declare the supported options.
@@ -521,7 +562,8 @@ int main(int argc, char* argv[]) {
   }
 
   Environment mapf(roadmap, goalVertices, disappearAtGoal);
-  CBS<State, Action, int, Conflict, Constraints, Environment> cbs(mapf);
+  CBS<State, Action, int, Conflict, Constraints, Environment, AStar<State, Action, int, LowLevelEnvironment>, LowLevelEnvironment> cbs(mapf);
+
   std::vector<PlanResult<State, Action, int> > solution;
 
   Timer timer;

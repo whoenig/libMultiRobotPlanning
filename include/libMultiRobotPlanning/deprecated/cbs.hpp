@@ -2,9 +2,7 @@
 
 #include <map>
 
-#include <boost/heap/d_ary_heap.hpp>
-
-#include "planresult.hpp"
+#include "a_star.hpp"
 
 namespace libMultiRobotPlanning {
 
@@ -79,8 +77,7 @@ statistical purposes.
 statistical purposes.
 */
 template <typename State, typename Action, typename Cost, typename Conflict,
-          typename Constraints, typename Environment,
-          typename LowLevelAlgorithm, typename LowLevelEnvironment>
+          typename Constraints, typename Environment>
 class CBS {
  public:
   CBS(Environment& environment) : m_env(environment) {}
@@ -100,7 +97,7 @@ class CBS {
       //   std::cout << "use existing solution for agent: " << i << std::endl;
       // } else {
       LowLevelEnvironment llenv(m_env, i, start.constraints[i]);
-      LowLevelAlgorithm lowLevel(llenv);
+      LowLevelSearch_t lowLevel(llenv);
       bool success = lowLevel.search(initialStates[i], start.solution[i]);
       if (!success) {
         return false;
@@ -156,7 +153,7 @@ class CBS {
         newNode.cost -= newNode.solution[i].cost;
 
         LowLevelEnvironment llenv(m_env, i, newNode.constraints[i]);
-        LowLevelAlgorithm lowLevel(llenv);
+        LowLevelSearch_t lowLevel(llenv);
         bool success = lowLevel.search(initialStates[i], newNode.solution[i]);
 
         newNode.cost += newNode.solution[i].cost;
@@ -209,8 +206,46 @@ class CBS {
     }
   };
 
+  struct LowLevelEnvironment {
+    LowLevelEnvironment(Environment& env, size_t agentIdx,
+                        const Constraints& constraints)
+        : m_env(env)
+    // , m_agentIdx(agentIdx)
+    // , m_constraints(constraints)
+    {
+      m_env.setLowLevelContext(agentIdx, &constraints);
+    }
+
+    Cost admissibleHeuristic(const State& s) {
+      return m_env.admissibleHeuristic(s);
+    }
+
+    bool isSolution(const State& s) { return m_env.isSolution(s); }
+
+    void getNeighbors(const State& s,
+                      std::vector<Neighbor<State, Action, Cost> >& neighbors) {
+      m_env.getNeighbors(s, neighbors);
+    }
+
+    void onExpandNode(const State& s, Cost fScore, Cost gScore) {
+      // std::cout << "LL expand: " << s << std::endl;
+      m_env.onExpandLowLevelNode(s, fScore, gScore);
+    }
+
+    void onDiscover(const State& /*s*/, Cost /*fScore*/, Cost /*gScore*/) {
+      // std::cout << "LL discover: " << s << std::endl;
+      // m_env.onDiscoverLowLevel(s, m_agentIdx, m_constraints);
+    }
+
+   private:
+    Environment& m_env;
+    // size_t m_agentIdx;
+    // const Constraints& m_constraints;
+  };
+
  private:
   Environment& m_env;
+  typedef AStar<State, Action, Cost, LowLevelEnvironment> LowLevelSearch_t;
 };
 
 }  // namespace libMultiRobotPlanning
